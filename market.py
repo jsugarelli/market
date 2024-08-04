@@ -39,8 +39,10 @@ def callback_shifts():
 st.slider("Nachfrage verschieben", key="slider1", min_value=-10, max_value=10, value=st.session_state["demand_shift"], on_change=callback_shifts)
 st.slider("Angebot verschieben", key="slider2", min_value=-10, max_value=10, value=st.session_state["supply_shift"], on_change=callback_shifts)
 
+
+st.sidebar.header("Einstellungen")
 # Create text inputs for slope, intercept and colors
-with st.sidebar.expander("Parameter"):
+with st.sidebar.expander("Parameter Angebots- und Nachfragekurven"):
     demand_slope = float(st.text_input("Nachfrage Steigung", value=str(demand_slope)))
     demand_intercept = float(st.text_input("Nachfrage y-Achsenabschnitt", value=str(demand_intercept)))
     supply_slope = float(st.text_input("Angebot Steigung", value=str(supply_slope)))
@@ -48,6 +50,8 @@ with st.sidebar.expander("Parameter"):
 
 # Create option to show surpluses
 surplus_option = st.sidebar.radio("Renten anzeigen", ("Keine", "Ausgangssituation", "Nach Veränderung", "Beide"))
+
+st.sidebar.divider()
 
 # Calculate equilibrium price and quantity
 st.session_state["equilibrium_quantity_original"] = (demand_intercept - supply_intercept) / (supply_slope - demand_slope)
@@ -118,19 +122,36 @@ ax.yaxis.set_ticks_position("left")
 ax.set_ylim(bottom=0)
 st.pyplot(fig)
 
+st.sidebar.header("Ergebnisse")
+
 # Display equilibrium price and quantity
+st.sidebar.subheader("Preise")
 st.sidebar.write("Gleichgewichtspreis (ursprünglich):", round(st.session_state["equilibrium_price_original"], 2))
-st.sidebar.write("Gleichgewichtsmenge (ursprünglich):", round(st.session_state["equilibrium_quantity_original"], 2))
 if st.session_state["shift"]:
     st.sidebar.write("Gleichgewichtspreis (verschoben):", round(st.session_state["equilibrium_price_shifted"], 2))
+
+st.sidebar.subheader("Mengen")
+st.sidebar.write("Gleichgewichtsmenge (ursprünglich):", round(st.session_state["equilibrium_quantity_original"], 2))
+if st.session_state["shift"]:
     st.sidebar.write("Gleichgewichtsmenge (verschoben):", round(st.session_state["equilibrium_quantity_shifted"], 2))
 
-# Display surplus values if option is selected
+if surplus_option != "Keine":
+    st.sidebar.subheader("Konsumentenrente")
 if surplus_option == "Ausgangssituation" or surplus_option == "Beide":
     st.sidebar.write("Konsumentenrente (ursprünglich):", round(consumer_surplus_original, 2))
-    st.sidebar.write("Produzentenrente (ursprünglich):", round(producer_surplus_original, 2))
-    st.sidebar.write("Gesamtwohlfahrt (ursprünglich):", round(consumer_surplus_original + producer_surplus_original, 2))
-elif (surplus_option == "Nach Veränderung" or surplus_option == "Beide") and st.session_state["shift"]:
+if (surplus_option == "Nach Veränderung" or surplus_option == "Beide") and st.session_state["shift"]:
     st.sidebar.write("Konsumentenrente (verschoben):", round(consumer_surplus_shifted, 2))
+
+if surplus_option != "Keine":
+    st.sidebar.subheader("Produzentenrente")
+if surplus_option == "Ausgangssituation" or surplus_option == "Beide":
+    st.sidebar.write("Produzentenrente (ursprünglich):", round(producer_surplus_original, 2))
+if (surplus_option == "Nach Veränderung" or surplus_option == "Beide") and st.session_state["shift"]:
     st.sidebar.write("Produzentenrente (verschoben):", round(producer_surplus_shifted, 2))
+
+if surplus_option != "Keine":
+    st.sidebar.subheader("Gesamtwohlfahrt")
+if surplus_option == "Ausgangssituation" or surplus_option == "Beide":
+    st.sidebar.write("Gesamtwohlfahrt (ursprünglich):", round(consumer_surplus_original + producer_surplus_original, 2))
+if (surplus_option == "Nach Veränderung" or surplus_option == "Beide") and st.session_state["shift"]:
     st.sidebar.write("Gesamtwohlfahrt (verschoben):", round(consumer_surplus_shifted + producer_surplus_shifted, 2))
