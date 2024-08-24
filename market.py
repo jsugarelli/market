@@ -13,6 +13,7 @@ supply_intercept = 2
 supply_color = (218/255,0/255,42/255)
 demand_color = (31/255,73/255,125/255)
 equilibrium_color = (0/255,0/255,0/255)
+deadweightloss_color = (0/127,0/137,0/127)
 alpha = 0.4
 alpha_shift = 0.2
 
@@ -24,6 +25,7 @@ if "loaded" not in st.session_state:
     st.session_state["equilibrium_quantity_shifted"] = 0
     st.session_state["equilibrium_price_original"] = 0
     st.session_state["equilibrium_price_shifted"] = 0    
+    st.session_state["equilibrium_mc_prosppay_newquantity"] = 0
     st.session_state["loaded"] = True
 
 # Create Streamlit application
@@ -53,15 +55,26 @@ surplus_option = st.sidebar.radio("Renten anzeigen", ("Keine", "Ausgangssituatio
 
 st.sidebar.divider()
 
-# Calculate equilibrium price and quantity
+
+# -------- CALCULATE EQUILIBRIUM PRICE AND QUANTITY AS WELL AS SUPPORT POINT ON ORIGINAL CURVE (MARGINAL COSTS/MARGINAL PROSPENSITY TO PAY AT NEW QUANTITY)
+
+# Original
 st.session_state["equilibrium_quantity_original"] = (demand_intercept - supply_intercept) / (supply_slope - demand_slope)
 st.session_state["equilibrium_price_original"] = demand_intercept + demand_slope * st.session_state["equilibrium_quantity_original"]
-
+# After shift
 st.session_state["equilibrium_quantity_shifted"] = (demand_intercept + st.session_state["demand_shift"] - (supply_intercept + st.session_state["supply_shift"])) / (supply_slope - demand_slope)
 st.session_state["equilibrium_price_shifted"] = demand_intercept + st.session_state["demand_shift"]  + demand_slope * st.session_state["equilibrium_quantity_shifted"]
+if st.session_state["demand_shift"] != 0 and st.session_state["supply_shift"] == 0:
+    st.session_state["equilibrium_mc_prosppay_newquantity"] = demand_intercept + demand_slope * st.session_state["equilibrium_quantity_shifted"]
+elif st.session_state["demand_shift"] == 0 and st.session_state["supply_shift"] != 0:
+    st.session_state["equilibrium_mc_prosppay_newquantity"] = supply_intercept + supply_slope * st.session_state["equilibrium_quantity_shifted"]
+else:
+    st.session_state["equilibrium_mc_prosppay_newquantity"] = 0
+print(st.session_state["equilibrium_mc_prosppay_newquantity"])
 
 
-# Calculate surplus areas
+# --------  CALCULATE SURPLUS AREAS
+
 def calculate_surplus(demand_intercept, supply_intercept, equilibrium_price, equilibrium_quantity):
     consumer_surplus = 0.5 * (demand_intercept - equilibrium_price) * equilibrium_quantity
     producer_surplus = 0.5 * (equilibrium_price - supply_intercept) * equilibrium_quantity
@@ -72,7 +85,10 @@ consumer_surplus_original, producer_surplus_original = calculate_surplus(
 consumer_surplus_shifted, producer_surplus_shifted = calculate_surplus(
     demand_intercept + st.session_state["demand_shift"], supply_intercept + st.session_state["supply_shift"], st.session_state["equilibrium_price_shifted"], st.session_state["equilibrium_quantity_shifted"])
 
-# Create plot
+
+
+# --------  CREATE PLOT
+
 x = np.linspace(0, 20, 400)
 fig, ax = plt.subplots()
 
@@ -87,7 +103,6 @@ if st.session_state["shift"]:
 ax.plot(st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"], marker="o", markersize=5, color=equilibrium_color)
 
 if st.session_state["shift"]:
-    print("shifty")
     ax.plot(st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"], marker="o", markersize=5, color=equilibrium_color)
 
 # Plot surpluses if option is selected
@@ -109,7 +124,13 @@ if (surplus_option == "Nach Veränderung" or surplus_option == "Beide") and st.s
     producer_surplus_edges_shifted = [(0, supply_intercept+st.session_state["supply_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (0, st.session_state["equilibrium_price_shifted"])]
     patch_producer_surplus_shifted = pt.Polygon(producer_surplus_edges_shifted, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha_shift, label="Produzentenrente (nach Veränderung)")
     ax.add_patch(patch_producer_surplus_shifted)
+    # Deadweight loss
+    deadweight_loss_shifted = [(st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_mc_prosppay_newquantity"])]
+    if st.session_state["equilibrium_mc_prosppay_newquantity"] != 0:
+        patch_deadweight_loss = pt.Polygon(deadweight_loss_shifted, closed=True, fill=True, edgecolor='none',facecolor=deadweightloss_color, alpha=alpha_shift, label="Wohlfahrtsverlust")
+        ax.add_patch(patch_deadweight_loss)
 
+# Graph style
 ax.set_xlabel("Menge")
 ax.set_ylabel("Preis")
 ax.legend()
@@ -121,6 +142,8 @@ ax.xaxis.set_ticks_position("bottom")
 ax.yaxis.set_ticks_position("left")
 ax.set_ylim(bottom=0)
 st.pyplot(fig)
+
+
 
 st.sidebar.header("Ergebnisse")
 
