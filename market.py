@@ -2,6 +2,8 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as pt
+import json
+import os
 from config import *
 
 
@@ -15,39 +17,66 @@ if "loaded" not in st.session_state:
     st.session_state["equilibrium_price_shifted"] = 0    
     st.session_state["equilibrium_mc_prosppay_newquantity"] = 0
     st.session_state["gov_intervention"] = False
+    st.session_state["gallery_selected"] = "(bitte wählen)"
+    if os.path.exists("gallery.json"):
+        st.session_state["has_gallery"] = True
+        with open("gallery.json", "r", encoding="utf-8") as galleryfile:
+            st.session_state["gallery_entries"] = json.load(galleryfile)
+    else:
+        st.session_state["has_gallery"] = False
     st.session_state["loaded"] = True
+
 
 # Create Streamlit application
 st.title(title)
 
-# Callbacks for sliders
+# Callbacks
 def callback_shifts():    
     st.session_state["demand_shift"] = st.session_state.slider1
     st.session_state["supply_shift"] = st.session_state.slider2
     st.session_state["shift"] = st.session_state["demand_shift"] != 0 or st.session_state["supply_shift"] != 0
+    st.session_state["gallery_selected"] = "(bitte wählen)"
 
 def callback_gov():
     st.session_state["gov_intervention"] = not st.session_state["gov_intervention"]
+    st.session_state["gallery_selected"] = "(bitte wählen)"
     
+
+def callback_scenarios():    
+    scenario = st.session_state["gallery_choice"]
+    st.session_state["gallery_selected"] = scenario
+    if st.session_state["gallery_choice"] != "(bitte wählen)":
+        st.session_state["demand_shift"] = st.session_state["gallery_entries"][scenario]["shift_demand"]
+        st.session_state["supply_shift"] = st.session_state["gallery_entries"][scenario]["shift_supply"]
+        st.session_state["shift"] = st.session_state["demand_shift"] != 0 or st.session_state["supply_shift"] != 0
+        st.session_state["gov_intervention"] = st.session_state["gallery_entries"][scenario]["gov_intervention"]
+    else:
+        st.session_state["demand_shift"] = 0
+        st.session_state["supply_shift"] = 0
+        st.session_state["shift"] = False
+        st.session_state["gov_intervention"] = False
+    
+
 
 # Create sliders for shifting demand and supply curves
 slider_value_demand = st.slider("Nachfrage verschieben", key="slider1", min_value=-10, max_value=10, value=st.session_state["demand_shift"], on_change=callback_shifts)
 st.slider("Angebot verschieben", key="slider2", min_value=-10, max_value=10, value=st.session_state["supply_shift"], on_change=callback_shifts)
-st.checkbox("Verschiebung durch Steuer oder Subvention des Staates",False, on_change=callback_gov)
+st.checkbox("Verschiebung durch Steuer oder Subvention des Staates", st.session_state["gov_intervention"], on_change=callback_gov)
 
 
-st.sidebar.header("Einstellungen")
-# Create text inputs for slope, intercept and colors
-with st.sidebar.expander("Parameter Angebots- und Nachfragekurven"):
-    demand_slope = float(st.text_input("Nachfrage Steigung", value=str(demand_slope)))
-    demand_intercept = float(st.text_input("Nachfrage y-Achsenabschnitt", value=str(demand_intercept)))
-    supply_slope = float(st.text_input("Angebot Steigung", value=str(supply_slope)))
-    supply_intercept = float(st.text_input("Angebot y-Achsenabschnitt", value=str(supply_intercept)))
+st.sidebar.header("Anzeige")
 
 # Create option to show surpluses
 surplus_option = st.sidebar.radio("Renten von Haushalten und Firmen anzeigen", ("Keine", "Ausgangssituation", "Nach Veränderung", "Beide"))
 show_gov = st.sidebar.checkbox("Staatseinnahmen/-ausgaben anzeigen")
 show_deadweight_loss = st.sidebar.checkbox("Wohlfahrtsverlust anzeigen (bei Staatseingriff)")
+
+# Gallery
+if st.session_state["has_gallery"]:    
+    st.sidebar.divider()
+    st.sidebar.header("Fertige Szenarien")
+    gallery_entry_names = ["(bitte wählen)"] + [s for s in st.session_state["gallery_entries"].keys()]    
+    gallery_option = st.sidebar.selectbox(label = "Fertige Szenarien:", options = gallery_entry_names, on_change=callback_scenarios, key="gallery_choice", index = gallery_entry_names.index(st.session_state["gallery_selected"]))
 
 st.sidebar.divider()
 
@@ -157,6 +186,20 @@ ax.set_ylim(bottom=0)
 st.pyplot(fig)
 
 
+# Model comment
+if st.session_state["gallery_selected"] != "(bitte wählen)":
+    scenario = st.session_state["gallery_selected"]    
+    st.markdown(
+        """
+        <div style="background-color: #ffffcc; padding: 10px; border-radius: 5px;">
+            <p style="color: black;">
+                <b> """ + scenario + """ </b><br> """ + st.session_state["gallery_entries"][scenario]["explain_text"] + """
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 
 st.sidebar.header("Ergebnisse")
 
@@ -191,3 +234,11 @@ if surplus_option == "Ausgangssituation" or surplus_option == "Beide":
     st.sidebar.write("Gesamtwohlfahrt (ursprünglich):", round(consumer_surplus_original + producer_surplus_original, 2))
 if (surplus_option == "Nach Veränderung" or surplus_option == "Beide") and st.session_state["shift"]:
     st.sidebar.write("Gesamtwohlfahrt (verschoben):", round(consumer_surplus_shifted + producer_surplus_shifted, 2))
+
+
+# Create inputs for demand and supply curves
+with st.sidebar.expander("Parameter Angebots- und Nachfragekurven"):
+    demand_slope = float(st.text_input("Nachfrage Steigung", value=str(demand_slope)))
+    demand_intercept = float(st.text_input("Nachfrage y-Achsenabschnitt", value=str(demand_intercept)))
+    supply_slope = float(st.text_input("Angebot Steigung", value=str(supply_slope)))
+    supply_intercept = float(st.text_input("Angebot y-Achsenabschnitt", value=str(supply_intercept)))

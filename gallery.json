@@ -1,0 +1,14 @@
+{
+    "Rohstoffpreise steigen" : {
+        "shift_supply" : 5,
+        "shift_demand" : 0,
+        "gov_intervention": false,
+        "explain_text" : "Irgendein Text, der das Szenario erklärt"
+    },
+    "Staat gewährt Subvention auf Nachfrage" : {
+        "shift_supply" : 0,
+        "shift_demand" : 4,
+        "gov_intervention": true,
+        "explain_text" : "Irgendein Text, der das Szenario erklärt"
+    }
+}
