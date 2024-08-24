@@ -13,9 +13,14 @@ supply_intercept = 2
 supply_color = (218/255,0/255,42/255)
 demand_color = (31/255,73/255,125/255)
 equilibrium_color = (0/255,0/255,0/255)
-deadweightloss_color = (0/127,0/137,0/127)
+deadweightloss_color = (127/255,137/255,127/255)
+gov_income_color = (250/255,192/255,144/255)
+gov_expenses_color = (190/255,168/255,106/255)
 alpha = 0.4
 alpha_shift = 0.2
+alpha_gov = 0.6
+alpha_deadweight_loss = 0.6
+
 
 if "loaded" not in st.session_state:        
     st.session_state["demand_shift"] = 0
@@ -26,6 +31,7 @@ if "loaded" not in st.session_state:
     st.session_state["equilibrium_price_original"] = 0
     st.session_state["equilibrium_price_shifted"] = 0    
     st.session_state["equilibrium_mc_prosppay_newquantity"] = 0
+    st.session_state["gov_intervention"] = False
     st.session_state["loaded"] = True
 
 # Create Streamlit application
@@ -37,9 +43,14 @@ def callback_shifts():
     st.session_state["supply_shift"] = st.session_state.slider2
     st.session_state["shift"] = st.session_state["demand_shift"] != 0 or st.session_state["supply_shift"] != 0
 
+def callback_gov():
+    st.session_state["gov_intervention"] = not st.session_state["gov_intervention"]
+    
+
 # Create sliders for shifting demand and supply curves
-st.slider("Nachfrage verschieben", key="slider1", min_value=-10, max_value=10, value=st.session_state["demand_shift"], on_change=callback_shifts)
+slider_value_demand = st.slider("Nachfrage verschieben", key="slider1", min_value=-10, max_value=10, value=st.session_state["demand_shift"], on_change=callback_shifts)
 st.slider("Angebot verschieben", key="slider2", min_value=-10, max_value=10, value=st.session_state["supply_shift"], on_change=callback_shifts)
+st.checkbox("Verschiebung durch Steuer oder Subvention des Staates",False, on_change=callback_gov)
 
 
 st.sidebar.header("Einstellungen")
@@ -51,9 +62,12 @@ with st.sidebar.expander("Parameter Angebots- und Nachfragekurven"):
     supply_intercept = float(st.text_input("Angebot y-Achsenabschnitt", value=str(supply_intercept)))
 
 # Create option to show surpluses
-surplus_option = st.sidebar.radio("Renten anzeigen", ("Keine", "Ausgangssituation", "Nach Veränderung", "Beide"))
+surplus_option = st.sidebar.radio("Renten von Haushalten und Firmen anzeigen", ("Keine", "Ausgangssituation", "Nach Veränderung", "Beide"))
+show_gov = st.sidebar.checkbox("Staatseinnahmen/-ausgaben anzeigen")
+show_deadweight_loss = st.sidebar.checkbox("Wohlfahrtsverlust anzeigen (bei Staatseingriff)")
 
 st.sidebar.divider()
+
 
 
 # -------- CALCULATE EQUILIBRIUM PRICE AND QUANTITY AS WELL AS SUPPORT POINT ON ORIGINAL CURVE (MARGINAL COSTS/MARGINAL PROSPENSITY TO PAY AT NEW QUANTITY)
@@ -70,7 +84,7 @@ elif st.session_state["demand_shift"] == 0 and st.session_state["supply_shift"] 
     st.session_state["equilibrium_mc_prosppay_newquantity"] = supply_intercept + supply_slope * st.session_state["equilibrium_quantity_shifted"]
 else:
     st.session_state["equilibrium_mc_prosppay_newquantity"] = 0
-print(st.session_state["equilibrium_mc_prosppay_newquantity"])
+
 
 
 # --------  CALCULATE SURPLUS AREAS
@@ -124,11 +138,27 @@ if (surplus_option == "Nach Veränderung" or surplus_option == "Beide") and st.s
     producer_surplus_edges_shifted = [(0, supply_intercept+st.session_state["supply_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (0, st.session_state["equilibrium_price_shifted"])]
     patch_producer_surplus_shifted = pt.Polygon(producer_surplus_edges_shifted, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha_shift, label="Produzentenrente (nach Veränderung)")
     ax.add_patch(patch_producer_surplus_shifted)
-    # Deadweight loss
-    deadweight_loss_shifted = [(st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_mc_prosppay_newquantity"])]
-    if st.session_state["equilibrium_mc_prosppay_newquantity"] != 0:
-        patch_deadweight_loss = pt.Polygon(deadweight_loss_shifted, closed=True, fill=True, edgecolor='none',facecolor=deadweightloss_color, alpha=alpha_shift, label="Wohlfahrtsverlust")
+if show_deadweight_loss:
+    if st.session_state["equilibrium_mc_prosppay_newquantity"] != 0 and st.session_state["gov_intervention"]:
+        deadweight_loss_shifted = [(st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_mc_prosppay_newquantity"])]
+        patch_deadweight_loss = pt.Polygon(deadweight_loss_shifted, closed=True, fill=True, edgecolor='none',facecolor=deadweightloss_color, alpha=alpha_deadweight_loss, label="Wohlfahrtsverlust")
         ax.add_patch(patch_deadweight_loss)
+if show_gov:
+    if st.session_state["equilibrium_mc_prosppay_newquantity"] != 0 and st.session_state["gov_intervention"]:
+        if st.session_state["demand_shift"] != 0:
+            gov_incexp = [(0, demand_intercept), (0, demand_intercept + st.session_state["demand_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_mc_prosppay_newquantity"])]
+            print(gov_incexp)
+        if st.session_state["supply_shift"] != 0:
+            gov_incexp = [(0, supply_intercept), (0, supply_intercept + st.session_state["supply_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_mc_prosppay_newquantity"])]
+            print(gov_incexp)
+        if st.session_state["demand_shift"] < 0 or st.session_state["supply_shift"] > 0:
+            gov_color = gov_income_color
+            gov_text = "Einnahmen Staat"
+        else:
+            gov_color = gov_expenses_color
+            gov_text = "Ausgaben Staat"
+        patch_gov = pt.Polygon(gov_incexp, closed=True, fill=True, edgecolor='none',facecolor=gov_color, alpha=alpha_gov, label=gov_text)
+        ax.add_patch(patch_gov)
 
 # Graph style
 ax.set_xlabel("Menge")
