@@ -58,11 +58,42 @@ def callback_scenarios():
     
 
 
-# Create sliders for shifting demand and supply curves
+# Create tabs for controls and empty tab
 st.subheader("I. Vorgaben", divider="gray")
-slider_value_demand = st.slider("Nachfrage verschieben", key="slider1", min_value=-10, max_value=10, value=st.session_state["demand_shift"], on_change=callback_shifts)
-st.slider("Angebot verschieben", key="slider2", min_value=-10, max_value=10, value=st.session_state["supply_shift"], on_change=callback_shifts)
-st.checkbox("Verschiebung durch Steuer oder Subvention des Staates", st.session_state["gov_intervention"], on_change=callback_gov)
+st.markdown("""
+    <style>
+    .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
+        font-size: 18px;
+    }
+    .stTabs [data-baseweb="tab-panel"] {
+        padding-bottom: 40px;
+        padding-bottom: 20px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+tab1, tab2 = st.tabs(["Exogene Variablen, Steuern, Subventionen", "Mindest- und Höchstpreise"])
+
+with tab1:    
+    slider_value_demand = st.slider("Nachfrage verschieben", key="slider1", min_value=-10, max_value=10, value=st.session_state["demand_shift"], on_change=callback_shifts)
+    st.slider("Angebot verschieben", key="slider2", min_value=-10, max_value=10, value=st.session_state["supply_shift"], on_change=callback_shifts)
+    st.checkbox("Verschiebung durch Steuer oder Subvention des Staates", st.session_state["gov_intervention"], on_change=callback_gov)
+
+with tab2:
+    col1, col2 = st.columns(2)
+    with col1:
+        hoechstpreis = st.number_input("Höchstpreis", value=None, step=0.1, format="%.2f")
+    with col2:
+        mindestpreis = st.number_input("Mindestpreis", value=None, step=0.1, format="%.2f")
+
+    if hoechstpreis is not None and mindestpreis is not None:
+        st.warning("Mindest- und Höchstpreise können nicht kombiniert werden")
+
+    if mindestpreis is not None and mindestpreis < st.session_state["equilibrium_price_original"]:
+        st.warning("Mindestpreis muss **über** dem Gleichgewichtspreis von " + str(round(st.session_state["equilibrium_price_original"],3)) + " liegen.")
+
+    if hoechstpreis is not None and hoechstpreis > st.session_state["equilibrium_price_original"]:
+        st.warning("Höchstpreis muss **unter** dem Gleichgewichtspreis von " + str(round(st.session_state["equilibrium_price_original"],3)) + " liegen.")
 
 
 st.sidebar.header("Anzeige")
@@ -259,6 +290,19 @@ if show_quant_results:
 st.sidebar.divider()
 
 st.sidebar.header("Einstellungen")
+
+st.markdown("""
+    <style>
+    .streamlit-expanderHeader {
+        font-size: 18px !important;
+        font-weight: bold;
+    }
+    div[data-testid="stExpander"] div[role="button"] p {
+        font-size: 18px !important;
+        font-weight: bold;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 with st.sidebar.expander("Parameter Angebots- und Nachfragekurven"):
     demand_slope = float(st.text_input("Nachfrage Steigung", value=str(demand_slope)))
