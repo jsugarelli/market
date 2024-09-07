@@ -31,9 +31,10 @@ if "loaded" not in st.session_state:
             st.session_state["gallery_entries"] = json.load(galleryfile)
     else:
         st.session_state["has_gallery"] = False
-    st.session_state["loaded"] = True
     st.session_state["fix_axes"] = True
-
+    st.session_state["show_grid"] = False
+    st.session_state["tickmark_width"] = 1.0
+    st.session_state["loaded"] = True
 
 # Create Streamlit application
 st.title(title)
@@ -50,7 +51,15 @@ def callback_params():
     st.session_state["demand_intercept"] = float(st.session_state.demand_intercept_slider)
     st.session_state["supply_slope"] = float(st.session_state.supply_slope_slider)
     st.session_state["supply_intercept"] = float(st.session_state.supply_intercept_slider)
-    st.session_state["fix_axes"] = st.session_state.fix_axes_slider
+    st.session_state["fix_axes"] = st.session_state.fix_axes_checkbox
+    st.session_state["show_grid"] = st.session_state.show_grid_checkbox
+    st.session_state["tickmark_width"] = st.session_state.tickmark_input
+
+def callback_reset():
+    st.session_state["demand_slope"] = demand_slope
+    st.session_state["demand_intercept"] = demand_intercept
+    st.session_state["supply_slope"] = supply_slope
+    st.session_state["supply_intercept"] = supply_intercept
 
 def callback_gov():
     st.session_state["gov_intervention"] = not st.session_state["gov_intervention"]
@@ -246,19 +255,28 @@ ax.set_ylim(bottom=0)
 # Increase tick label font size
 ax.tick_params(axis='both', which='major', labelsize=14)
 
+# Set tick marks based on tickmark_width
+ax.xaxis.set_major_locator(plt.MultipleLocator(st.session_state["tickmark_width"]))
+ax.yaxis.set_major_locator(plt.MultipleLocator(st.session_state["tickmark_width"]))
+
 # Set fixed axes if checkbox is checked
 if st.session_state["fix_axes"]:
-    ax.set_xlim(0, math.ceil(demand_intercept / ((-1)*demand_slope))+1)
-    ax.set_ylim(0, math.ceil(demand_intercept)+1)
+    ax.set_xlim(0, math.ceil(demand_intercept / ((-1)*demand_slope))+5)
+    ax.set_ylim(0, math.ceil(demand_intercept)+5)
 else:
-    ax.set_xlim(0, math.ceil(st.session_state["demand_intercept"] / ((-1)*st.session_state["demand_slope"]))+1)
-    ax.set_ylim(0, math.ceil(st.session_state["demand_intercept"])+1)
+    ax.set_xlim(0, math.ceil(max(st.session_state["demand_intercept"], st.session_state["demand_intercept"] + st.session_state["demand_shift"]) / ((-1)*st.session_state["demand_slope"]))+5)
+    ax.set_ylim(0, math.ceil(max(st.session_state["demand_intercept"], st.session_state["demand_intercept"] + st.session_state["demand_shift"]))+5)
+
+# Add gridlines if show_grid is True
+if st.session_state["show_grid"]:
+    ax.grid(True, linestyle=':', color='gray', alpha=0.8)
 
 # Adjust the figure size to accommodate the legend
 fig.set_size_inches(12, 8)
 plt.tight_layout()
 
 st.pyplot(fig)
+
 
 
 # Model comment
@@ -340,12 +358,17 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-with st.sidebar.expander("**Parameter Angebots- und Nachfragekurven**"):
+with st.sidebar.expander("**Parameter der Angebots- und Nachfragekurven**"):
     st.text_input("Nachfrage Steigung", value=str(st.session_state["demand_slope"]), key="demand_slope_slider", on_change=callback_params)
     st.text_input("Nachfrage y-Achsenabschnitt", value=str(st.session_state["demand_intercept"]), key="demand_intercept_slider", on_change=callback_params)
     st.text_input("Angebot Steigung", value=str(st.session_state["supply_slope"]), key="supply_slope_slider", on_change=callback_params)
     st.text_input("Angebot y-Achsenabschnitt", value=str(st.session_state["supply_intercept"]), key="supply_intercept_slider", on_change=callback_params)
-    st.checkbox("Achsenskalierung fixieren", value=st.session_state["fix_axes"], key= "fix_axes_slider", on_change=callback_params)
+    st.button("Reset", on_click=callback_reset)
+
+with st.sidebar.expander("**Parameter der Grafik**"):    
+    st.checkbox("Achsenskalierung fixieren", value=st.session_state["fix_axes"], key="fix_axes_checkbox", on_change=callback_params)
+    st.checkbox("Gitterlinien anzeigen", value=st.session_state["show_grid"], key="show_grid_checkbox", on_change=callback_params)
+    st.number_input("Abstand Achsenmarkierugen", value=st.session_state["tickmark_width"], step=0.5, min_value=0.5, max_value=5.0, format="%.1f", key="tickmark_input", on_change=callback_params)
 
 with st.sidebar.expander("**About MarketSimulator**"):
     st.write("Version 0.2")
