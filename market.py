@@ -6,6 +6,8 @@ import json
 import os
 from config import *
 
+# Set the page title (browser tab title)
+st.set_page_config(page_title=title)
 
 if "loaded" not in st.session_state:        
     st.session_state["demand_shift"] = 0
@@ -25,6 +27,7 @@ if "loaded" not in st.session_state:
     else:
         st.session_state["has_gallery"] = False
     st.session_state["loaded"] = True
+    st.session_state["fix_axes"] = True
 
 
 # Create Streamlit application
@@ -66,8 +69,8 @@ st.markdown("""
         font-size: 18px;
     }
     .stTabs [data-baseweb="tab-panel"] {
+        padding-top: 20px;
         padding-bottom: 40px;
-        padding-bottom: 20px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -75,11 +78,13 @@ st.markdown("""
 tab1, tab2 = st.tabs(["Exogene Variablen, Steuern, Subventionen", "Mindest- und Höchstpreise"])
 
 with tab1:    
+    st.markdown("<br>", unsafe_allow_html=True)
     slider_value_demand = st.slider("Nachfrage verschieben", key="slider1", min_value=-10, max_value=10, value=st.session_state["demand_shift"], on_change=callback_shifts)
     st.slider("Angebot verschieben", key="slider2", min_value=-10, max_value=10, value=st.session_state["supply_shift"], on_change=callback_shifts)
     st.checkbox("Verschiebung durch Steuer oder Subvention des Staates", st.session_state["gov_intervention"], on_change=callback_gov)
 
 with tab2:
+    st.markdown("<br>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
         hoechstpreis = st.number_input("Höchstpreis", value=None, step=0.1, format="%.2f")
@@ -211,10 +216,13 @@ if show_gov:
         patch_gov = pt.Polygon(gov_incexp, closed=True, fill=True, edgecolor='none',facecolor=gov_color, alpha=alpha_gov, label=gov_text)
         ax.add_patch(patch_gov)
 
+# Increase font size for axis labels and tick labels
+plt.rcParams.update({'font.size': 14})
+
 # Graph style
-ax.set_xlabel("Menge")
-ax.set_ylabel("Preis")
-ax.legend()
+ax.set_xlabel("Menge", fontsize=16)
+ax.set_ylabel("Preis", fontsize=16)
+ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=14)
 ax.spines["top"].set_visible(False)
 ax.spines["right"].set_visible(False)
 ax.spines['bottom'].set_position("zero")
@@ -222,6 +230,19 @@ ax.spines['left'].set_position("zero")
 ax.xaxis.set_ticks_position("bottom")
 ax.yaxis.set_ticks_position("left")
 ax.set_ylim(bottom=0)
+
+# Increase tick label font size
+ax.tick_params(axis='both', which='major', labelsize=14)
+
+# Set fixed axes if checkbox is checked
+if st.session_state["fix_axes"]:
+    ax.set_xlim(0, 20)  # Adjust these values as needed
+    ax.set_ylim(0, 20)  # Adjust these values as needed
+
+# Adjust the figure size to accommodate the legend
+fig.set_size_inches(12, 8)  # Adjust these values as needed
+plt.tight_layout()
+
 st.pyplot(fig)
 
 
@@ -309,6 +330,7 @@ with st.sidebar.expander("Parameter Angebots- und Nachfragekurven"):
     demand_intercept = float(st.text_input("Nachfrage y-Achsenabschnitt", value=str(demand_intercept)))
     supply_slope = float(st.text_input("Angebot Steigung", value=str(supply_slope)))
     supply_intercept = float(st.text_input("Angebot y-Achsenabschnitt", value=str(supply_intercept)))
+    fix_axes = st.checkbox("Achsenskalierung fixieren", value=True)
 
 with st.sidebar.expander("About MarketSimulator"):
     st.write("Version 0.2")
