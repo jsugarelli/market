@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 import matplotlib.patches as pt
 import json
@@ -10,6 +11,10 @@ from config import *
 st.set_page_config(page_title=title)
 
 if "loaded" not in st.session_state:        
+    st.session_state["demand_slope"] = demand_slope
+    st.session_state["demand_intercept"] = demand_intercept
+    st.session_state["supply_slope"] = supply_slope
+    st.session_state["supply_intercept"] = supply_intercept
     st.session_state["demand_shift"] = 0
     st.session_state["supply_shift"] = 0
     st.session_state["shift"] = False
@@ -39,6 +44,13 @@ def callback_shifts():
     st.session_state["supply_shift"] = st.session_state.slider2
     st.session_state["shift"] = st.session_state["demand_shift"] != 0 or st.session_state["supply_shift"] != 0
     st.session_state["gallery_selected"] = "(bitte wählen)"
+
+def callback_params():
+    st.session_state["demand_slope"] = float(st.session_state.demand_slope_slider)
+    st.session_state["demand_intercept"] = float(st.session_state.demand_intercept_slider)
+    st.session_state["supply_slope"] = float(st.session_state.supply_slope_slider)
+    st.session_state["supply_intercept"] = float(st.session_state.supply_intercept_slider)
+    st.session_state["fix_axes"] = st.session_state.fix_axes_slider
 
 def callback_gov():
     st.session_state["gov_intervention"] = not st.session_state["gov_intervention"]
@@ -129,15 +141,15 @@ if st.session_state["has_gallery"]:
 # -------- CALCULATE EQUILIBRIUM PRICE AND QUANTITY AS WELL AS SUPPORT POINT ON ORIGINAL CURVE (MARGINAL COSTS/MARGINAL PROSPENSITY TO PAY AT NEW QUANTITY)
 
 # Original
-st.session_state["equilibrium_quantity_original"] = (demand_intercept - supply_intercept) / (supply_slope - demand_slope)
-st.session_state["equilibrium_price_original"] = demand_intercept + demand_slope * st.session_state["equilibrium_quantity_original"]
+st.session_state["equilibrium_quantity_original"] = (st.session_state["demand_intercept"] - st.session_state["supply_intercept"]) / (st.session_state["supply_slope"] - st.session_state["demand_slope"])
+st.session_state["equilibrium_price_original"] = st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_original"]
 # After shift
-st.session_state["equilibrium_quantity_shifted"] = (demand_intercept + st.session_state["demand_shift"] - (supply_intercept + st.session_state["supply_shift"])) / (supply_slope - demand_slope)
-st.session_state["equilibrium_price_shifted"] = demand_intercept + st.session_state["demand_shift"]  + demand_slope * st.session_state["equilibrium_quantity_shifted"]
+st.session_state["equilibrium_quantity_shifted"] = (st.session_state["demand_intercept"] + st.session_state["demand_shift"] - (st.session_state["supply_intercept"] + st.session_state["supply_shift"])) / (st.session_state["supply_slope"] - st.session_state["demand_slope"])
+st.session_state["equilibrium_price_shifted"] = st.session_state["demand_intercept"] + st.session_state["demand_shift"]  + st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_shifted"]
 if st.session_state["demand_shift"] != 0 and st.session_state["supply_shift"] == 0:
-    st.session_state["equilibrium_mc_prosppay_newquantity"] = demand_intercept + demand_slope * st.session_state["equilibrium_quantity_shifted"]
+    st.session_state["equilibrium_mc_prosppay_newquantity"] = st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_shifted"]
 elif st.session_state["demand_shift"] == 0 and st.session_state["supply_shift"] != 0:
-    st.session_state["equilibrium_mc_prosppay_newquantity"] = supply_intercept + supply_slope * st.session_state["equilibrium_quantity_shifted"]
+    st.session_state["equilibrium_mc_prosppay_newquantity"] = st.session_state["supply_intercept"] + st.session_state["supply_slope"] * st.session_state["equilibrium_quantity_shifted"]
 else:
     st.session_state["equilibrium_mc_prosppay_newquantity"] = 0
 
@@ -151,9 +163,9 @@ def calculate_surplus(demand_intercept, supply_intercept, equilibrium_price, equ
     return consumer_surplus, producer_surplus
 
 consumer_surplus_original, producer_surplus_original = calculate_surplus(
-    demand_intercept, supply_intercept, st.session_state["equilibrium_price_original"], st.session_state["equilibrium_quantity_original"])
+    st.session_state["demand_intercept"], st.session_state["supply_intercept"], st.session_state["equilibrium_price_original"], st.session_state["equilibrium_quantity_original"])
 consumer_surplus_shifted, producer_surplus_shifted = calculate_surplus(
-    demand_intercept + st.session_state["demand_shift"], supply_intercept + st.session_state["supply_shift"], st.session_state["equilibrium_price_shifted"], st.session_state["equilibrium_quantity_shifted"])
+    st.session_state["demand_intercept"] + st.session_state["demand_shift"], st.session_state["supply_intercept"] + st.session_state["supply_shift"], st.session_state["equilibrium_price_shifted"], st.session_state["equilibrium_quantity_shifted"])
 
 
 
@@ -165,11 +177,11 @@ x = np.linspace(0, 20, 400)
 fig, ax = plt.subplots()
 
 # Plot original and shifted demand and supply curves
-ax.plot(x, demand_slope * x + demand_intercept, label="Nachfrage", color=demand_color)
-ax.plot(x, supply_slope * x + supply_intercept, label="Angebot", color=supply_color)
+ax.plot(x, st.session_state["demand_slope"] * x + st.session_state["demand_intercept"], label="Nachfrage", color=demand_color)
+ax.plot(x, st.session_state["supply_slope"] * x + st.session_state["supply_intercept"], label="Angebot", color=supply_color)
 if st.session_state["shift"]:    
-    ax.plot(x, demand_slope * x + demand_intercept + st.session_state["demand_shift"], label="Nachfrage (verschoben)", linestyle="dotted", color=demand_color)
-    ax.plot(x, supply_slope * x + supply_intercept + st.session_state["supply_shift"], label="Angebot (verschoben)", linestyle="dotted", color=supply_color)
+    ax.plot(x, st.session_state["demand_slope"] * x + st.session_state["demand_intercept"] + st.session_state["demand_shift"], label="Nachfrage (verschoben)", linestyle="dotted", color=demand_color)
+    ax.plot(x, st.session_state["supply_slope"] * x + st.session_state["supply_intercept"] + st.session_state["supply_shift"], label="Angebot (verschoben)", linestyle="dotted", color=supply_color)
 
 # Plot equilibrium points
 ax.plot(st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"], marker="o", markersize=5, color=equilibrium_color)
@@ -180,20 +192,20 @@ if st.session_state["shift"]:
 # Plot surpluses if option is selected
 if surplus_option == "Ausgangssituation" or surplus_option == "Beide":
     # Original Consumer Surplus
-    consumer_surplus_edges = [(0, demand_intercept), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (0, st.session_state["equilibrium_price_original"])]
+    consumer_surplus_edges = [(0, st.session_state["demand_intercept"]), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (0, st.session_state["equilibrium_price_original"])]
     patch_consumer_surplus = pt.Polygon(consumer_surplus_edges, closed=True, fill=True, edgecolor='none',facecolor=demand_color, alpha=alpha, label="Konsumentenrente")
     ax.add_patch(patch_consumer_surplus)
     # Original Producer Surplus
-    producer_surplus_edges = [(0, supply_intercept), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (0, st.session_state["equilibrium_price_original"])]
+    producer_surplus_edges = [(0, st.session_state["supply_intercept"]), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (0, st.session_state["equilibrium_price_original"])]
     patch_producer_surplus = pt.Polygon(producer_surplus_edges, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha, label="Produzentenrente")
     ax.add_patch(patch_producer_surplus)
 if (surplus_option == "Nach Veränderung" or surplus_option == "Beide") and st.session_state["shift"]:
     # Shifted Consumer Surplus
-    consumer_surplus_edges_shifted = [(0, demand_intercept+st.session_state["demand_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (0, st.session_state["equilibrium_price_shifted"])]
+    consumer_surplus_edges_shifted = [(0, st.session_state["demand_intercept"]+st.session_state["demand_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (0, st.session_state["equilibrium_price_shifted"])]
     patch_consumer_surplus_shifted = pt.Polygon(consumer_surplus_edges_shifted, closed=True, fill=True, edgecolor='none',facecolor=demand_color, alpha=alpha_shift, label="Konsumentenrente (nach Veränderung)")
     ax.add_patch(patch_consumer_surplus_shifted)
     # Shifted Producer Surplus
-    producer_surplus_edges_shifted = [(0, supply_intercept+st.session_state["supply_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (0, st.session_state["equilibrium_price_shifted"])]
+    producer_surplus_edges_shifted = [(0, st.session_state["supply_intercept"]+st.session_state["supply_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (0, st.session_state["equilibrium_price_shifted"])]
     patch_producer_surplus_shifted = pt.Polygon(producer_surplus_edges_shifted, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha_shift, label="Produzentenrente (nach Veränderung)")
     ax.add_patch(patch_producer_surplus_shifted)
 if show_deadweight_loss:
@@ -204,9 +216,9 @@ if show_deadweight_loss:
 if show_gov:
     if st.session_state["equilibrium_mc_prosppay_newquantity"] != 0 and st.session_state["gov_intervention"]:
         if st.session_state["demand_shift"] != 0:
-            gov_incexp = [(0, demand_intercept), (0, demand_intercept + st.session_state["demand_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_mc_prosppay_newquantity"])]            
+            gov_incexp = [(0, st.session_state["demand_intercept"]), (0, st.session_state["demand_intercept"] + st.session_state["demand_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_mc_prosppay_newquantity"])]            
         if st.session_state["supply_shift"] != 0:
-            gov_incexp = [(0, supply_intercept), (0, supply_intercept + st.session_state["supply_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_mc_prosppay_newquantity"])]
+            gov_incexp = [(0, st.session_state["supply_intercept"]), (0, st.session_state["supply_intercept"] + st.session_state["supply_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_mc_prosppay_newquantity"])]
         if st.session_state["demand_shift"] < 0 or st.session_state["supply_shift"] > 0:
             gov_color = gov_income_color
             gov_text = "Einnahmen Staat"
@@ -236,11 +248,14 @@ ax.tick_params(axis='both', which='major', labelsize=14)
 
 # Set fixed axes if checkbox is checked
 if st.session_state["fix_axes"]:
-    ax.set_xlim(0, 20)  # Adjust these values as needed
-    ax.set_ylim(0, 20)  # Adjust these values as needed
+    ax.set_xlim(0, math.ceil(demand_intercept / ((-1)*demand_slope))+1)
+    ax.set_ylim(0, math.ceil(demand_intercept)+1)
+else:
+    ax.set_xlim(0, math.ceil(st.session_state["demand_intercept"] / ((-1)*st.session_state["demand_slope"]))+1)
+    ax.set_ylim(0, math.ceil(st.session_state["demand_intercept"])+1)
 
 # Adjust the figure size to accommodate the legend
-fig.set_size_inches(12, 8)  # Adjust these values as needed
+fig.set_size_inches(12, 8)
 plt.tight_layout()
 
 st.pyplot(fig)
@@ -325,12 +340,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-with st.sidebar.expander("Parameter Angebots- und Nachfragekurven"):
-    demand_slope = float(st.text_input("Nachfrage Steigung", value=str(demand_slope)))
-    demand_intercept = float(st.text_input("Nachfrage y-Achsenabschnitt", value=str(demand_intercept)))
-    supply_slope = float(st.text_input("Angebot Steigung", value=str(supply_slope)))
-    supply_intercept = float(st.text_input("Angebot y-Achsenabschnitt", value=str(supply_intercept)))
-    fix_axes = st.checkbox("Achsenskalierung fixieren", value=True)
+with st.sidebar.expander("**Parameter Angebots- und Nachfragekurven**"):
+    st.text_input("Nachfrage Steigung", value=str(st.session_state["demand_slope"]), key="demand_slope_slider", on_change=callback_params)
+    st.text_input("Nachfrage y-Achsenabschnitt", value=str(st.session_state["demand_intercept"]), key="demand_intercept_slider", on_change=callback_params)
+    st.text_input("Angebot Steigung", value=str(st.session_state["supply_slope"]), key="supply_slope_slider", on_change=callback_params)
+    st.text_input("Angebot y-Achsenabschnitt", value=str(st.session_state["supply_intercept"]), key="supply_intercept_slider", on_change=callback_params)
+    st.checkbox("Achsenskalierung fixieren", value=st.session_state["fix_axes"], key= "fix_axes_slider", on_change=callback_params)
 
-with st.sidebar.expander("About MarketSimulator"):
+with st.sidebar.expander("**About MarketSimulator**"):
     st.write("Version 0.2")
