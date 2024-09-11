@@ -6,6 +6,7 @@ import matplotlib.patches as pt
 import json
 import os
 from config import *
+from translations import translations, language_flags  # Import the translations and flags
 
 # Set the page title (browser tab title)
 st.set_page_config(page_title=title)
@@ -34,10 +35,31 @@ if "loaded" not in st.session_state:
     st.session_state["fix_axes"] = True
     st.session_state["show_grid"] = False
     st.session_state["tickmark_width"] = 1.0
+    st.session_state["use_gallery"] = use_gallery
+    st.session_state["use_ai"] = use_ai
     st.session_state["loaded"] = True
+    st.session_state["language"] = "de"  # Default to German
+
+# Add this function to get translations
+def get_translation(key):
+    return translations[st.session_state["language"]].get(key, key)
+
+# Add language selector to sidebar
+selected_flag = st.sidebar.selectbox(
+    "Language / Sprache",
+    options=list(language_flags.keys()),
+    format_func=lambda x: language_flags[x],
+    index=list(language_flags.keys()).index(st.session_state["language"]),
+    key="language_selector"
+)
+
+# Update the language in session state
+st.session_state["language"] = selected_flag
 
 # Create Streamlit application
-st.title(title)
+st.title(get_translation("TITLE"))
+st.markdown("<br>", unsafe_allow_html=True)
+
 
 # Callbacks
 def callback_shifts():    
@@ -83,7 +105,7 @@ def callback_scenarios():
 
 
 # Create tabs for controls and empty tab
-st.subheader("I. Vorgaben", divider="gray")
+st.subheader(get_translation("INPUTS_SUBHEADER"), divider="gray")
 st.markdown("""
     <style>
     .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
@@ -96,54 +118,64 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-tab1, tab2 = st.tabs(["Exogene Variablen, Steuern, Subventionen", "Mindest- und Höchstpreise"])
+tablist = [get_translation("EXOGENOUS_VARIABLES_TAB"), get_translation("PRICE_LIMITS_TAB")]
+if st.session_state["use_gallery"]:
+    tablist.append(get_translation("SCENARIOS_TAB"))
+if st.session_state["use_ai"]:
+    tablist.append(get_translation("AI_TAB"))
 
-with tab1:    
+tabs = st.tabs(tablist)
+
+with tabs[0]:    
     st.markdown("<br>", unsafe_allow_html=True)
-    slider_value_demand = st.slider("Nachfrage verschieben", key="slider1", min_value=-10, max_value=10, value=st.session_state["demand_shift"], on_change=callback_shifts)
-    st.slider("Angebot verschieben", key="slider2", min_value=-10, max_value=10, value=st.session_state["supply_shift"], on_change=callback_shifts)
-    st.checkbox("Verschiebung durch Steuer oder Subvention des Staates", st.session_state["gov_intervention"], on_change=callback_gov)
+    slider_value_demand = st.slider(get_translation("SHIFT_DEMAND"), key="slider1", min_value=-10, max_value=10, value=st.session_state["demand_shift"], on_change=callback_shifts)
+    slider_value_supply = st.slider(get_translation("SHIFT_SUPPLY"), key="slider2", min_value=-10, max_value=10, value=st.session_state["supply_shift"], on_change=callback_shifts)
+    st.checkbox(get_translation("GOV_INTERVENTION_CHECKBOX"), st.session_state["gov_intervention"], on_change=callback_gov)
 
-with tab2:
+with tabs[1]:
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        hoechstpreis = st.number_input("Höchstpreis", value=None, step=0.1, format="%.2f")
+        hoechstpreis = st.number_input(get_translation("MAX_PRICE"), value=None, step=0.1, format="%.2f")
     with col2:
-        mindestpreis = st.number_input("Mindestpreis", value=None, step=0.1, format="%.2f")
+        mindestpreis = st.number_input(get_translation("MIN_PRICE"), value=None, step=0.1, format="%.2f")
 
     if hoechstpreis is not None and mindestpreis is not None:
-        st.warning("Mindest- und Höchstpreise können nicht kombiniert werden")
+        st.warning(get_translation("PRICE_LIMITS_WARNING"))
 
     if mindestpreis is not None and mindestpreis < st.session_state["equilibrium_price_original"]:
-        st.warning("Mindestpreis muss **über** dem Gleichgewichtspreis von " + str(round(st.session_state["equilibrium_price_original"],3)) + " liegen.")
+        st.warning(get_translation("MIN_PRICE_WARNING").format(st.session_state["equilibrium_price_original"]))
 
     if hoechstpreis is not None and hoechstpreis > st.session_state["equilibrium_price_original"]:
-        st.warning("Höchstpreis muss **unter** dem Gleichgewichtspreis von " + str(round(st.session_state["equilibrium_price_original"],3)) + " liegen.")
+        st.warning(get_translation("MAX_PRICE_WARNING").format(st.session_state["equilibrium_price_original"]))
 
+if st.session_state["use_gallery"]:
+    if st.session_state["has_gallery"]:    
+        with tabs[2]:
+            gallery_entry_names = ["(bitte wählen)"] + [s for s in st.session_state["gallery_entries"].keys()]
+            st.write(get_translation("SCENARIOS_INSTRUCTIONS"))
+            gallery_option = st.selectbox(label=get_translation("SCENARIOS_LABEL"), label_visibility="hidden", options = gallery_entry_names, on_change=callback_scenarios, key="gallery_choice", index = gallery_entry_names.index(st.session_state["gallery_selected"]))
 
-st.sidebar.header("Anzeige")
+if st.session_state["use_ai"]:
+    with tabs[-1]:
+        st.write(get_translation("AI_INSTRUCTIONS"))
+
+st.sidebar.header(get_translation("DISPLAY_HEADER"))
 
 # Create option to show surpluses
-st.sidebar.subheader("Renten von Haushalten und Firmen")
-surplus_option = st.sidebar.radio(label="In Grafik darstellen", options=("Keine", "Ausgangssituation", "Nach Veränderung", "Beide"))
-st.sidebar.subheader("Renten des Staates")
-show_gov = st.sidebar.checkbox("Staatseinnahmen/-ausgaben anzeigen")
+st.sidebar.subheader(get_translation("SURPLUS_SUBHEADER"))
+surplus_option = st.sidebar.radio(label=get_translation("SURPLUS_RADIO_LABEL"), options=(get_translation("SURPLUS_NONE"), get_translation("SURPLUS_ORIGINAL"), get_translation("SURPLUS_SHIFTED"), get_translation("SURPLUS_BOTH")))
+st.sidebar.subheader(get_translation("GOV_SURPLUS_SUBHEADER"))
+show_gov = st.sidebar.checkbox(get_translation("SHOW_GOV_CHECKBOX"))
 if show_gov and not st.session_state["gov_intervention"]:
-    st.sidebar.write('<span style="color:red;">Die aktuelle Veränderung von Angebot/Nachfrage ist nicht markiert als durch Steuern oder Subventionen hervorgerufen. Solange werden keine Einnahmen/Ausgaben des Staates angezeigt.</span>', unsafe_allow_html=True)
-st.sidebar.subheader("Wohlfahrtsverlust")
-show_deadweight_loss = st.sidebar.checkbox("Wohlfahrtsverlust anzeigen (bei Staatseingriff)")
+    st.sidebar.write(get_translation("GOV_INTERVENTION_WARNING"))
+st.sidebar.subheader(get_translation("DEADWEIGHT_LOSS_SUBHEADER"))
+show_deadweight_loss = st.sidebar.checkbox(get_translation("SHOW_DEADWEIGHT_LOSS_CHECKBOX"))
 if show_deadweight_loss and not st.session_state["gov_intervention"]:
-    st.sidebar.write('<span style="color:red;">Die aktuelle Veränderung von Angebot/Nachfrage ist nicht markiert als durch Steuern oder Subventionen hervorgerufen. Solange wird kein Wohlfahrtsverslust angezeigt.</span>', unsafe_allow_html=True)
-st.sidebar.subheader("Quantitative Ergebnisse")
-show_quant_results = st.sidebar.checkbox("Quantitative Ergebnisse anzeigen")
+    st.sidebar.write(get_translation("GOV_INTERVENTION_WARNING"))
+st.sidebar.subheader(get_translation("QUANT_RESULTS_SUBHEADER"))
+show_quant_results = st.sidebar.checkbox(get_translation("SHOW_QUANT_RESULTS_CHECKBOX"))
 
-# Gallery
-if st.session_state["has_gallery"]:    
-    st.sidebar.divider()
-    st.sidebar.header("Fertige Szenarien")
-    gallery_entry_names = ["(bitte wählen)"] + [s for s in st.session_state["gallery_entries"].keys()]    
-    gallery_option = st.sidebar.selectbox(label = "Fertige Szenarien:", options = gallery_entry_names, on_change=callback_scenarios, key="gallery_choice", index = gallery_entry_names.index(st.session_state["gallery_selected"]))
 
 
 
@@ -180,17 +212,18 @@ consumer_surplus_shifted, producer_surplus_shifted = calculate_surplus(
 
 # --------  CREATE PLOT
 
-st.subheader("II. Grafische Analyse", divider="gray")
+st.markdown("<br>", unsafe_allow_html=True)
+st.subheader(get_translation("GRAPHICAL_ANALYSIS_SUBHEADER"), divider="gray")
 
 x = np.linspace(0, 20, 400)
 fig, ax = plt.subplots()
 
 # Plot original and shifted demand and supply curves
-ax.plot(x, st.session_state["demand_slope"] * x + st.session_state["demand_intercept"], label="Nachfrage", color=demand_color)
-ax.plot(x, st.session_state["supply_slope"] * x + st.session_state["supply_intercept"], label="Angebot", color=supply_color)
+ax.plot(x, st.session_state["demand_slope"] * x + st.session_state["demand_intercept"], label=get_translation("DEMAND_LABEL"), color=demand_color)
+ax.plot(x, st.session_state["supply_slope"] * x + st.session_state["supply_intercept"], label=get_translation("SUPPLY_LABEL"), color=supply_color)
 if st.session_state["shift"]:    
-    ax.plot(x, st.session_state["demand_slope"] * x + st.session_state["demand_intercept"] + st.session_state["demand_shift"], label="Nachfrage (verschoben)", linestyle="dotted", color=demand_color)
-    ax.plot(x, st.session_state["supply_slope"] * x + st.session_state["supply_intercept"] + st.session_state["supply_shift"], label="Angebot (verschoben)", linestyle="dotted", color=supply_color)
+    ax.plot(x, st.session_state["demand_slope"] * x + st.session_state["demand_intercept"] + st.session_state["demand_shift"], label=get_translation("DEMAND_SHIFTED_LABEL"), linestyle="dotted", color=demand_color)
+    ax.plot(x, st.session_state["supply_slope"] * x + st.session_state["supply_intercept"] + st.session_state["supply_shift"], label=get_translation("SUPPLY_SHIFTED_LABEL"), linestyle="dotted", color=supply_color)
 
 # Plot equilibrium points
 ax.plot(st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"], marker="o", markersize=5, color=equilibrium_color)
@@ -199,28 +232,28 @@ if st.session_state["shift"]:
     ax.plot(st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"], marker="o", markersize=5, color=equilibrium_color)
 
 # Plot surpluses if option is selected
-if surplus_option == "Ausgangssituation" or surplus_option == "Beide":
+if surplus_option == get_translation("SURPLUS_ORIGINAL") or surplus_option == get_translation("SURPLUS_BOTH"):
     # Original Consumer Surplus
     consumer_surplus_edges = [(0, st.session_state["demand_intercept"]), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (0, st.session_state["equilibrium_price_original"])]
-    patch_consumer_surplus = pt.Polygon(consumer_surplus_edges, closed=True, fill=True, edgecolor='none',facecolor=demand_color, alpha=alpha, label="Konsumentenrente")
+    patch_consumer_surplus = pt.Polygon(consumer_surplus_edges, closed=True, fill=True, edgecolor='none',facecolor=demand_color, alpha=alpha, label=get_translation("CONSUMER_SURPLUS_LABEL"))
     ax.add_patch(patch_consumer_surplus)
     # Original Producer Surplus
     producer_surplus_edges = [(0, st.session_state["supply_intercept"]), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (0, st.session_state["equilibrium_price_original"])]
-    patch_producer_surplus = pt.Polygon(producer_surplus_edges, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha, label="Produzentenrente")
+    patch_producer_surplus = pt.Polygon(producer_surplus_edges, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha, label=get_translation("PRODUCER_SURPLUS_LABEL"))
     ax.add_patch(patch_producer_surplus)
-if (surplus_option == "Nach Veränderung" or surplus_option == "Beide") and st.session_state["shift"]:
+if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and st.session_state["shift"]:
     # Shifted Consumer Surplus
     consumer_surplus_edges_shifted = [(0, st.session_state["demand_intercept"]+st.session_state["demand_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (0, st.session_state["equilibrium_price_shifted"])]
-    patch_consumer_surplus_shifted = pt.Polygon(consumer_surplus_edges_shifted, closed=True, fill=True, edgecolor='none',facecolor=demand_color, alpha=alpha_shift, label="Konsumentenrente (nach Veränderung)")
+    patch_consumer_surplus_shifted = pt.Polygon(consumer_surplus_edges_shifted, closed=True, fill=True, edgecolor='none',facecolor=demand_color, alpha=alpha_shift, label=get_translation("CONSUMER_SURPLUS_SHIFTED_LABEL"))
     ax.add_patch(patch_consumer_surplus_shifted)
     # Shifted Producer Surplus
     producer_surplus_edges_shifted = [(0, st.session_state["supply_intercept"]+st.session_state["supply_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (0, st.session_state["equilibrium_price_shifted"])]
-    patch_producer_surplus_shifted = pt.Polygon(producer_surplus_edges_shifted, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha_shift, label="Produzentenrente (nach Veränderung)")
+    patch_producer_surplus_shifted = pt.Polygon(producer_surplus_edges_shifted, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha_shift, label=get_translation("PRODUCER_SURPLUS_SHIFTED_LABEL"))
     ax.add_patch(patch_producer_surplus_shifted)
 if show_deadweight_loss:
     if st.session_state["equilibrium_mc_prosppay_newquantity"] != 0 and st.session_state["gov_intervention"]:
         deadweight_loss_shifted = [(st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_mc_prosppay_newquantity"])]
-        patch_deadweight_loss = pt.Polygon(deadweight_loss_shifted, closed=True, fill=True, edgecolor='none',facecolor=deadweightloss_color, alpha=alpha_deadweight_loss, label="Wohlfahrtsverlust")
+        patch_deadweight_loss = pt.Polygon(deadweight_loss_shifted, closed=True, fill=True, edgecolor='none',facecolor=deadweightloss_color, alpha=alpha_deadweight_loss, label=get_translation("DEADWEIGHT_LOSS_LABEL"))
         ax.add_patch(patch_deadweight_loss)
 if show_gov:
     if st.session_state["equilibrium_mc_prosppay_newquantity"] != 0 and st.session_state["gov_intervention"]:
@@ -230,10 +263,10 @@ if show_gov:
             gov_incexp = [(0, st.session_state["supply_intercept"]), (0, st.session_state["supply_intercept"] + st.session_state["supply_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_mc_prosppay_newquantity"])]
         if st.session_state["demand_shift"] < 0 or st.session_state["supply_shift"] > 0:
             gov_color = gov_income_color
-            gov_text = "Einnahmen Staat"
+            gov_text = get_translation("GOV_INCOME_LABEL")
         else:
             gov_color = gov_expenses_color
-            gov_text = "Ausgaben Staat"
+            gov_text = get_translation("GOV_EXPENSES_LABEL")
         patch_gov = pt.Polygon(gov_incexp, closed=True, fill=True, edgecolor='none',facecolor=gov_color, alpha=alpha_gov, label=gov_text)
         ax.add_patch(patch_gov)
 
@@ -241,8 +274,8 @@ if show_gov:
 plt.rcParams.update({'font.size': 14})
 
 # Graph style
-ax.set_xlabel("Menge", fontsize=16)
-ax.set_ylabel("Preis", fontsize=16)
+ax.set_xlabel(get_translation("QUANTITY_LABEL"), fontsize=16)
+ax.set_ylabel(get_translation("PRICE_LABEL"), fontsize=16)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=14)
 ax.spines["top"].set_visible(False)
 ax.spines["right"].set_visible(False)
@@ -293,49 +326,50 @@ if st.session_state["gallery_selected"] != "(bitte wählen)":
         unsafe_allow_html=True
     )
 
-if show_quant_results:    
-    st.subheader("III. Quantitative Ergebnisse", divider="gray")
+if show_quant_results:
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.subheader(get_translation("QUANT_RESULTS_SUBHEADER"), divider="gray")
 
     # Display equilibrium price and quantity
-    st.markdown("#### Preise")
-    outp = "Gleichgewichtspreis (ursprünglich): **" + str(round(st.session_state["equilibrium_price_original"], 2)) + "**"
+    st.markdown("#### " + get_translation("PRICES_LABEL"))
+    outp = get_translation("EQUILIBRIUM_PRICE_ORIGINAL_LABEL") + " **" + str(round(st.session_state["equilibrium_price_original"], 2)) + "**"
     st.write(outp)
     if st.session_state["shift"]:
-        outp = "Gleichgewichtspreis (verschoben): **" + str(round(st.session_state["equilibrium_price_shifted"], 2)) + "**"
+        outp = get_translation("EQUILIBRIUM_PRICE_SHIFTED_LABEL") + " **" + str(round(st.session_state["equilibrium_price_shifted"], 2)) + "**"
         st.write(outp)
 
-    st.markdown("#### Mengen")
-    outp = "Gleichgewichtsmenge (ursprünglich): **" + str(round(st.session_state["equilibrium_quantity_original"], 2)) + "**"
+    st.markdown("#### " + get_translation("QUANTITIES_LABEL"))
+    outp = get_translation("EQUILIBRIUM_QUANTITY_ORIGINAL_LABEL") + " **" + str(round(st.session_state["equilibrium_quantity_original"], 2)) + "**"
     st.write(outp)
     if st.session_state["shift"]:
-        outp = "Gleichgewichtsmenge (verschoben): **" + str(round(st.session_state["equilibrium_quantity_shifted"], 2)) + "**"
+        outp = get_translation("EQUILIBRIUM_QUANTITY_SHIFTED_LABEL") + " **" + str(round(st.session_state["equilibrium_quantity_shifted"], 2)) + "**"
         st.write(outp)
 
-    if surplus_option != "Keine":
-        st.markdown("#### Konsumentenrente")
-    if surplus_option == "Ausgangssituation" or surplus_option == "Beide":
-        outp = "Konsumentenrente (ursprünglich): **" + str(round(consumer_surplus_original, 2)) + "**"
+    if surplus_option != get_translation("SURPLUS_NONE"):
+        st.markdown("#### " + get_translation("CONSUMER_SURPLUS_LABEL"))
+    if surplus_option == get_translation("SURPLUS_ORIGINAL") or surplus_option == get_translation("SURPLUS_BOTH"):
+        outp = get_translation("CONSUMER_SURPLUS_ORIGINAL_LABEL") + " **" + str(round(consumer_surplus_original, 2)) + "**"
         st.write(outp)
-    if (surplus_option == "Nach Veränderung" or surplus_option == "Beide") and st.session_state["shift"]:
-        outp = "Konsumentenrente (verschoben): **" + str(round(consumer_surplus_shifted, 2)) + "**"
-        st.write(outp)
-
-    if surplus_option != "Keine":
-        st.markdown("#### Produzentenrente")
-    if surplus_option == "Ausgangssituation" or surplus_option == "Beide":
-        outp = "Produzentenrente (ursprünglich): **" +  str(round(producer_surplus_original, 2)) + "**"
-        st.write(outp)
-    if (surplus_option == "Nach Veränderung" or surplus_option == "Beide") and st.session_state["shift"]:
-        outp = "Produzentenrente (verschoben): **" + str(round(producer_surplus_shifted, 2)) + "**"
+    if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and st.session_state["shift"]:
+        outp = get_translation("CONSUMER_SURPLUS_SHIFTED_LABEL") + " **" + str(round(consumer_surplus_shifted, 2)) + "**"
         st.write(outp)
 
-    if surplus_option != "Keine":
-        st.markdown("#### Gesamtwohlfahrt")
-    if surplus_option == "Ausgangssituation" or surplus_option == "Beide":
-        outp = "Gesamtwohlfahrt (ursprünglich): **" + str(round(consumer_surplus_original + producer_surplus_original, 2)) + "**"
+    if surplus_option != get_translation("SURPLUS_NONE"):
+        st.markdown("#### " + get_translation("PRODUCER_SURPLUS_LABEL"))
+    if surplus_option == get_translation("SURPLUS_ORIGINAL") or surplus_option == get_translation("SURPLUS_BOTH"):
+        outp = get_translation("PRODUCER_SURPLUS_ORIGINAL_LABEL") + " **" +  str(round(producer_surplus_original, 2)) + "**"
         st.write(outp)
-    if (surplus_option == "Nach Veränderung" or surplus_option == "Beide") and st.session_state["shift"]:
-        outp = "Gesamtwohlfahrt (verschoben): **" + str(round(consumer_surplus_shifted + producer_surplus_shifted, 2)) + "**"
+    if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and st.session_state["shift"]:
+        outp = get_translation("PRODUCER_SURPLUS_SHIFTED_LABEL") + " **" + str(round(producer_surplus_shifted, 2)) + "**"
+        st.write(outp)
+
+    if surplus_option != get_translation("SURPLUS_NONE"):
+        st.markdown("#### " + get_translation("TOTAL_WELFARE_LABEL"))
+    if surplus_option == get_translation("SURPLUS_ORIGINAL") or surplus_option == get_translation("SURPLUS_BOTH"):
+        outp = get_translation("TOTAL_WELFARE_ORIGINAL_LABEL") + " **" + str(round(consumer_surplus_original + producer_surplus_original, 2)) + "**"
+        st.write(outp)
+    if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and st.session_state["shift"]:
+        outp = get_translation("TOTAL_WELFARE_SHIFTED_LABEL") + " **" + str(round(consumer_surplus_shifted + producer_surplus_shifted, 2)) + "**"
         st.write(outp)
 
 
@@ -343,7 +377,7 @@ if show_quant_results:
 
 st.sidebar.divider()
 
-st.sidebar.header("Einstellungen")
+st.sidebar.header(get_translation("SETTINGS_HEADER"))
 
 st.markdown("""
     <style>
@@ -358,17 +392,17 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-with st.sidebar.expander("**Parameter der Angebots- und Nachfragekurven**"):
-    st.text_input("Nachfrage Steigung", value=str(st.session_state["demand_slope"]), key="demand_slope_slider", on_change=callback_params)
-    st.text_input("Nachfrage y-Achsenabschnitt", value=str(st.session_state["demand_intercept"]), key="demand_intercept_slider", on_change=callback_params)
-    st.text_input("Angebot Steigung", value=str(st.session_state["supply_slope"]), key="supply_slope_slider", on_change=callback_params)
-    st.text_input("Angebot y-Achsenabschnitt", value=str(st.session_state["supply_intercept"]), key="supply_intercept_slider", on_change=callback_params)
-    st.button("Reset", on_click=callback_reset)
+with st.sidebar.expander(get_translation("CURVE_PARAMS_EXPANDER")):
+    st.text_input(get_translation("DEMAND_SLOPE_LABEL"), value=str(st.session_state["demand_slope"]), key="demand_slope_slider", on_change=callback_params)
+    st.text_input(get_translation("DEMAND_INTERCEPT_LABEL"), value=str(st.session_state["demand_intercept"]), key="demand_intercept_slider", on_change=callback_params)
+    st.text_input(get_translation("SUPPLY_SLOPE_LABEL"), value=str(st.session_state["supply_slope"]), key="supply_slope_slider", on_change=callback_params)
+    st.text_input(get_translation("SUPPLY_INTERCEPT_LABEL"), value=str(st.session_state["supply_intercept"]), key="supply_intercept_slider", on_change=callback_params)
+    st.button(get_translation("RESET_BUTTON"), on_click=callback_reset)
 
-with st.sidebar.expander("**Parameter der Grafik**"):    
-    st.checkbox("Achsenskalierung fixieren", value=st.session_state["fix_axes"], key="fix_axes_checkbox", on_change=callback_params)
-    st.checkbox("Gitterlinien anzeigen", value=st.session_state["show_grid"], key="show_grid_checkbox", on_change=callback_params)
-    st.number_input("Abstand Achsenmarkierugen", value=st.session_state["tickmark_width"], step=0.5, min_value=0.5, max_value=5.0, format="%.1f", key="tickmark_input", on_change=callback_params)
+with st.sidebar.expander(get_translation("GRAPH_PARAMS_EXPANDER")):    
+    st.checkbox(get_translation("FIX_AXES_CHECKBOX"), value=st.session_state["fix_axes"], key="fix_axes_checkbox", on_change=callback_params)
+    st.checkbox(get_translation("SHOW_GRID_CHECKBOX"), value=st.session_state["show_grid"], key="show_grid_checkbox", on_change=callback_params)
+    st.number_input(get_translation("TICKMARK_WIDTH_LABEL"), value=st.session_state["tickmark_width"], step=0.5, min_value=0.5, max_value=5.0, format="%.1f", key="tickmark_input", on_change=callback_params)
 
-with st.sidebar.expander("**About MarketSimulator**"):
-    st.write("Version 0.2")
+with st.sidebar.expander(get_translation("ABOUT_EXPANDER")):
+    st.write(get_translation("VERSION_LABEL"))
