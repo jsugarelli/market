@@ -7,6 +7,11 @@ import json
 import os
 from config import *
 from translations import translations, language_flags  # Import the translations and flags
+from openai import OpenAI
+from streamlit import secrets
+
+# Set up OpenAI API key
+client = OpenAI(api_key=secrets["OPENAI_API_KEY"])
 
 # Set the page title (browser tab title)
 st.set_page_config(page_title=title)
@@ -44,27 +49,14 @@ if "loaded" not in st.session_state:
 def get_translation(key):
     return translations[st.session_state["language"]].get(key, key)
 
-# Add language selector to sidebar
-selected_flag = st.sidebar.selectbox(
-    "Language / Sprache",
-    options=list(language_flags.keys()),
-    format_func=lambda x: language_flags[x],
-    index=list(language_flags.keys()).index(st.session_state["language"]),
-    key="language_selector"
-)
-
-# Update the language in session state
-st.session_state["language"] = selected_flag
-
 # Create Streamlit application
 st.title(get_translation("TITLE"))
 st.markdown("<br>", unsafe_allow_html=True)
 
-
 # Callbacks
 def callback_shifts():    
-    st.session_state["demand_shift"] = st.session_state.slider1
-    st.session_state["supply_shift"] = st.session_state.slider2
+    st.session_state["demand_shift"] = float(st.session_state.slider1)
+    st.session_state["supply_shift"] = float(st.session_state.slider2)
     st.session_state["shift"] = st.session_state["demand_shift"] != 0 or st.session_state["supply_shift"] != 0
     st.session_state["gallery_selected"] = "(bitte wählen)"
 
@@ -103,6 +95,9 @@ def callback_scenarios():
         st.session_state["gov_intervention"] = False
     
 
+# Add this callback function for language change
+def callback_language_change():
+    st.session_state["language"] = st.session_state["language_selector"]
 
 # Create tabs for controls and empty tab
 st.subheader(get_translation("INPUTS_SUBHEADER"), divider="gray")
@@ -128,8 +123,8 @@ tabs = st.tabs(tablist)
 
 with tabs[0]:    
     st.markdown("<br>", unsafe_allow_html=True)
-    slider_value_demand = st.slider(get_translation("SHIFT_DEMAND"), key="slider1", min_value=-10, max_value=10, value=st.session_state["demand_shift"], on_change=callback_shifts)
-    slider_value_supply = st.slider(get_translation("SHIFT_SUPPLY"), key="slider2", min_value=-10, max_value=10, value=st.session_state["supply_shift"], on_change=callback_shifts)
+    slider_value_demand = st.slider(get_translation("SHIFT_DEMAND"), key="slider1", min_value=-10.0, max_value=10.0, value=float(st.session_state["demand_shift"]), step=1.0, on_change=callback_shifts)
+    slider_value_supply = st.slider(get_translation("SHIFT_SUPPLY"), key="slider2", min_value=-10.0, max_value=10.0, value=float(st.session_state["supply_shift"]), step=1.0, on_change=callback_shifts)
     st.checkbox(get_translation("GOV_INTERVENTION_CHECKBOX"), st.session_state["gov_intervention"], on_change=callback_gov)
 
 with tabs[1]:
@@ -156,11 +151,91 @@ if st.session_state["use_gallery"]:
             st.write(get_translation("SCENARIOS_INSTRUCTIONS"))
             gallery_option = st.selectbox(label=get_translation("SCENARIOS_LABEL"), label_visibility="hidden", options = gallery_entry_names, on_change=callback_scenarios, key="gallery_choice", index = gallery_entry_names.index(st.session_state["gallery_selected"]))
 
+
+# Add this function to call the OpenAI API
+def call_openai_api(user_input):
+    try:        
+        print("Attempting to call OpenAI API...")
+        # Use the user's API key if provided, otherwise use the default
+        api_key = st.session_state.get("user_api_key", secrets["OPENAI_API_KEY"])
+        client = OpenAI(api_key=api_key)
+        
+        response = client.chat.completions.create(
+            model=ai_model,
+            messages=[
+                {"role": "system", "content": ai_system_message.replace("<LANGUAGE>", st.session_state["language"])},
+                {"role": "user", "content": user_input}
+            ],
+            temperature=ai_temperature
+        )        
+        content = response.choices[0].message.content
+        print("Raw API response:", content)  # Debug print
+        return content
+    except Exception as e:
+        print(f"Error in API call: {str(e)}")  # Debug print
+        error_message = get_translation("API_ERROR_WARNING")
+        st.warning(f"{error_message}: {str(e)}")
+        return f"Error: {str(e)}"
+
+# Add this function to parse the API response
+def parse_api_response(response):
+    print("Raw API response:", response)  # Debug print
+    try:
+        # First, try to parse the response as JSON
+        result = json.loads(response)
+    except json.JSONDecodeError:
+        print("Failed to parse response as JSON, attempting to parse as key-value pairs")
+        # If JSON parsing fails, parse as a simple key-value format
+        lines = response.strip().split('\n')
+        result = {}
+        for line in lines:
+            parts = line.split(':', 1)
+            if len(parts) == 2:
+                key, value = parts
+                result[key.strip()] = value.strip()
+    
+    print("Parsed result:", result)  # Debug print
+    
+    # Extract values with error handling
+    try:
+        return {
+            "status": result.get("status", "okay"),
+            "shift_demand": float(result.get("shift_demand", 0) or 0),
+            "shift_supply": float(result.get("shift_supply", 0) or 0),
+            "gov_intervention": result.get("gov_intervention", "False").lower() == "true",
+            "comment": result.get("comment", "")
+        }
+    except Exception as e:
+        print(f"Error extracting values from parsed result: {str(e)}")
+        comment = ""
+        return {"status": "error", "message": str(e), "comment": comment}
+
+# Modify the AI tab content
 if st.session_state["use_ai"]:
     with tabs[-1]:
         st.write(get_translation("AI_INSTRUCTIONS"))
+        user_input = st.text_area(get_translation("AI_INPUT_LABEL"), height=150)
+        if st.button(get_translation("ANALYZE_BUTTON")):
+            with st.spinner(get_translation("ANALYZING_MESSAGE")):
+                api_response = call_openai_api(user_input)
+                result = parse_api_response(api_response)
+                st.session_state["ai_result"] = result
+                
+                if result["status"] == "error" and result.get("comment")=="":
+                    st.error(get_translation("AI_ERROR_MESSAGE") + result.get("message", ""))
+                elif result["status"] == "error" and result.get("comment")!="":
+                    st.error(get_translation("AI_ERROR_MESSAGE") + result.get("comment", ""))
+                else:
+                    st.success(get_translation("AI_SUCCESS_MESSAGE"))
+                    st.session_state["demand_shift"] = result["shift_demand"]
+                    st.session_state["supply_shift"] = result["shift_supply"]
+                    st.session_state["gov_intervention"] = result["gov_intervention"]
+                    st.session_state["shift"] = result["shift_demand"] != 0 or result["shift_supply"] != 0                    
+                    st.rerun()
+
 
 st.sidebar.header(get_translation("DISPLAY_HEADER"))
+
 
 # Create option to show surpluses
 st.sidebar.subheader(get_translation("SURPLUS_SUBHEADER"))
@@ -310,7 +385,19 @@ plt.tight_layout()
 
 st.pyplot(fig)
 
-
+# Add this section to display the AI comment in a yellow box
+if st.session_state["use_ai"] and "ai_result" in st.session_state and st.session_state["ai_result"]["status"] == "okay":
+    ai_comment = st.session_state["ai_result"].get("comment", "")
+    if ai_comment:
+        st.markdown(
+            f"""
+            <div style="background-color: #ffffd0; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                <strong>{get_translation("AI_COMMENT_LABEL")}</strong><br>
+                {ai_comment}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 # Model comment
 if st.session_state["gallery_selected"] != "(bitte wählen)":
@@ -379,6 +466,23 @@ st.sidebar.divider()
 
 st.sidebar.header(get_translation("SETTINGS_HEADER"))
 
+
+selected_flag = st.sidebar.selectbox(
+    "Language / Sprache",
+    options=list(language_flags.keys()),
+    format_func=lambda x: language_flags[x],
+    index=list(language_flags.keys()).index(st.session_state["language"]),
+    key="language_selector",
+    on_change=callback_language_change
+)
+
+# Add this check to force a rerun when the language changes
+if "previous_language" not in st.session_state:
+    st.session_state["previous_language"] = st.session_state["language"]
+elif st.session_state["previous_language"] != st.session_state["language"]:
+    st.session_state["previous_language"] = st.session_state["language"]
+    st.rerun()
+
 st.markdown("""
     <style>
     .streamlit-expanderHeader {
@@ -403,6 +507,17 @@ with st.sidebar.expander(get_translation("GRAPH_PARAMS_EXPANDER")):
     st.checkbox(get_translation("FIX_AXES_CHECKBOX"), value=st.session_state["fix_axes"], key="fix_axes_checkbox", on_change=callback_params)
     st.checkbox(get_translation("SHOW_GRID_CHECKBOX"), value=st.session_state["show_grid"], key="show_grid_checkbox", on_change=callback_params)
     st.number_input(get_translation("TICKMARK_WIDTH_LABEL"), value=st.session_state["tickmark_width"], step=0.5, min_value=0.5, max_value=5.0, format="%.1f", key="tickmark_input", on_change=callback_params)
+
+with st.sidebar.expander(get_translation("API_SETTINGS_EXPANDER")):
+    user_api_key = st.text_input(
+        get_translation("API_KEY_INPUT"),
+        type="password",
+        help=get_translation("API_KEY_HELP")
+    )
+    if user_api_key:
+        st.session_state["user_api_key"] = user_api_key
+    elif "user_api_key" in st.session_state:
+        del st.session_state["user_api_key"]
 
 with st.sidebar.expander(get_translation("ABOUT_EXPANDER")):
     st.write(get_translation("VERSION_LABEL"))
