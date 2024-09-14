@@ -27,7 +27,7 @@ if "loaded" not in st.session_state:
     st.session_state["equilibrium_quantity_original"] = 0
     st.session_state["equilibrium_quantity_shifted"] = 0
     st.session_state["equilibrium_price_original"] = 0
-    st.session_state["equilibrium_price_shifted"] = 0    
+    st.session_state["equilibrium_price_shifted"] = 0
     st.session_state["equilibrium_mc_prosppay_newquantity"] = 0
     st.session_state["gov_intervention"] = False
     st.session_state["gallery_selected"] = "(bitte wählen)"
@@ -43,7 +43,7 @@ if "loaded" not in st.session_state:
     st.session_state["use_gallery"] = use_gallery
     st.session_state["use_ai"] = use_ai
     st.session_state["loaded"] = True
-    st.session_state["language"] = "de"  # Default to German
+    st.session_state["language"] = default_language
 
 # Add this function to get translations
 def get_translation(key):

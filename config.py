@@ -20,6 +20,8 @@ alpha = 0.4
 alpha_shift = 0.2
 alpha_gov = 0.6
 alpha_deadweight_loss = 0.6
+default_language = "de"
+
 
 # AI parameters
 ai_system_message = """
