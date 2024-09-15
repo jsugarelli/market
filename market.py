@@ -25,12 +25,16 @@ if "loaded" not in st.session_state:
     st.session_state["supply_shift"] = 0
     st.session_state["shift"] = False
     st.session_state["equilibrium_quantity_original"] = 0
-    st.session_state["equilibrium_quantity_shifted"] = 0
+    st.session_state["equilibrium_quantity_modified"] = 0
     st.session_state["equilibrium_price_original"] = 0
-    st.session_state["equilibrium_price_shifted"] = 0
+    st.session_state["equilibrium_price_modified"] = 0
     st.session_state["equilibrium_mc_prosppay_newquantity"] = 0
     st.session_state["gov_intervention"] = False
     st.session_state["gallery_selected"] = "(bitte wählen)"
+    st.session_state["max_price"] = 0
+    st.session_state["min_price"] = 0
+    st.session_state["limit_price"] = 0
+    st.session_state["limit_quantity"] = 0    
     if os.path.exists("gallery.json"):
         st.session_state["has_gallery"] = True
         with open("gallery.json", "r", encoding="utf-8") as galleryfile:
@@ -42,8 +46,9 @@ if "loaded" not in st.session_state:
     st.session_state["tickmark_width"] = 1.0
     st.session_state["use_gallery"] = use_gallery
     st.session_state["use_ai"] = use_ai
-    st.session_state["loaded"] = True
+    st.session_state["mode"]= "shift"
     st.session_state["language"] = default_language
+    st.session_state["loaded"] = True
 
 # Add this function to get translations
 def get_translation(key):
@@ -53,12 +58,33 @@ def get_translation(key):
 st.title(get_translation("TITLE"))
 st.markdown("<br>", unsafe_allow_html=True)
 
+
+# Mode changes
+def mode_shifts():    
+    st.session_state["mode"] = "shift"
+    st.session_state["max_price"] = 0
+    st.session_state["min_price"] = 0
+    st.session_state["limit_price"] = 0
+    st.session_state["limit_quantity"] = 0
+
+def mode_pricelimits():
+    st.session_state["mode"] = "pricelimits"    
+    st.session_state["demand_shift"] = 0
+    st.session_state["supply_shift"] = 0
+    st.session_state["shift"] = False
+    st.session_state["gov_intervention"] = False
+    st.session_state["equilibrium_quantity_modified"] = 0        
+    st.session_state["equilibrium_price_modified"] = 0
+    st.session_state["equilibrium_mc_prosppay_newquantity"] = 0    
+
+
 # Callbacks
 def callback_shifts():    
+    mode_shifts()
     st.session_state["demand_shift"] = float(st.session_state.slider1)
     st.session_state["supply_shift"] = float(st.session_state.slider2)
     st.session_state["shift"] = st.session_state["demand_shift"] != 0 or st.session_state["supply_shift"] != 0
-    st.session_state["gallery_selected"] = "(bitte wählen)"
+    st.session_state["gallery_selected"] = "(bitte wählen)"    
 
 def callback_params():
     st.session_state["demand_slope"] = float(st.session_state.demand_slope_slider)
@@ -79,8 +105,8 @@ def callback_gov():
     st.session_state["gov_intervention"] = not st.session_state["gov_intervention"]
     st.session_state["gallery_selected"] = "(bitte wählen)"
     
-
 def callback_scenarios():    
+    mode_shifts()
     scenario = st.session_state["gallery_choice"]
     st.session_state["gallery_selected"] = scenario
     if st.session_state["gallery_choice"] != "(bitte wählen)":
@@ -92,12 +118,24 @@ def callback_scenarios():
         st.session_state["demand_shift"] = 0
         st.session_state["supply_shift"] = 0
         st.session_state["shift"] = False
-        st.session_state["gov_intervention"] = False
+        st.session_state["gov_intervention"] = False        
+        st.session_state["equilibrium_quantity_modified"] = 0        
+        st.session_state["equilibrium_price_modified"] = 0
+        st.session_state["equilibrium_mc_prosppay_newquantity"] = 0
     
-
-# Add this callback function for language change
 def callback_language_change():
     st.session_state["language"] = st.session_state["language_selector"]
+
+def callback_pricelimits():
+    if (st.session_state.hoechstpreis > 0 and st.session_state.mindestpreis == 0) or (st.session_state.hoechstpreis == 0 and st.session_state.mindestpreis > 0):
+        mode_pricelimits()
+        st.session_state["max_price"] = st.session_state.hoechstpreis
+        st.session_state["min_price"] = st.session_state.mindestpreis
+        if st.session_state["max_price"] > 0:
+            st.session_state["limit_price"] = st.session_state["max_price"]
+        if st.session_state["min_price"] > 0:
+            st.session_state["limit_price"] = st.session_state["min_price"]
+
 
 # Create tabs for controls and empty tab
 st.subheader(get_translation("INPUTS_SUBHEADER"), divider="gray")
@@ -131,17 +169,17 @@ with tabs[1]:
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        hoechstpreis = st.number_input(get_translation("MAX_PRICE"), value=None, step=0.1, format="%.2f")
+        hoechstpreis = st.number_input(get_translation("MAX_PRICE"), value=0.0, step=0.1, format="%.2f", key="hoechstpreis", on_change=callback_pricelimits)
     with col2:
-        mindestpreis = st.number_input(get_translation("MIN_PRICE"), value=None, step=0.1, format="%.2f")
+        mindestpreis = st.number_input(get_translation("MIN_PRICE"), value=0.0, step=0.1, format="%.2f", key="mindestpreis", on_change=callback_pricelimits)
 
-    if hoechstpreis is not None and mindestpreis is not None:
+    if hoechstpreis != 0 and mindestpreis != 0:
         st.warning(get_translation("PRICE_LIMITS_WARNING"))
 
-    if mindestpreis is not None and mindestpreis < st.session_state["equilibrium_price_original"]:
+    if mindestpreis != 0  and mindestpreis < st.session_state["equilibrium_price_original"]:
         st.warning(get_translation("MIN_PRICE_WARNING").format(st.session_state["equilibrium_price_original"]))
 
-    if hoechstpreis is not None and hoechstpreis > st.session_state["equilibrium_price_original"]:
+    if hoechstpreis != 0 and hoechstpreis > st.session_state["equilibrium_price_original"]:
         st.warning(get_translation("MAX_PRICE_WARNING").format(st.session_state["equilibrium_price_original"]))
 
 if st.session_state["use_gallery"]:
@@ -260,29 +298,63 @@ show_quant_results = st.sidebar.checkbox(get_translation("SHOW_QUANT_RESULTS_CHE
 st.session_state["equilibrium_quantity_original"] = (st.session_state["demand_intercept"] - st.session_state["supply_intercept"]) / (st.session_state["supply_slope"] - st.session_state["demand_slope"])
 st.session_state["equilibrium_price_original"] = st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_original"]
 # After shift
-st.session_state["equilibrium_quantity_shifted"] = (st.session_state["demand_intercept"] + st.session_state["demand_shift"] - (st.session_state["supply_intercept"] + st.session_state["supply_shift"])) / (st.session_state["supply_slope"] - st.session_state["demand_slope"])
-st.session_state["equilibrium_price_shifted"] = st.session_state["demand_intercept"] + st.session_state["demand_shift"]  + st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_shifted"]
-if st.session_state["demand_shift"] != 0 and st.session_state["supply_shift"] == 0:
-    st.session_state["equilibrium_mc_prosppay_newquantity"] = st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_shifted"]
-elif st.session_state["demand_shift"] == 0 and st.session_state["supply_shift"] != 0:
-    st.session_state["equilibrium_mc_prosppay_newquantity"] = st.session_state["supply_intercept"] + st.session_state["supply_slope"] * st.session_state["equilibrium_quantity_shifted"]
-else:
-    st.session_state["equilibrium_mc_prosppay_newquantity"] = 0
-
+if st.session_state["shift"]:
+    st.session_state["equilibrium_quantity_modified"] = (st.session_state["demand_intercept"] + st.session_state["demand_shift"] - (st.session_state["supply_intercept"] + st.session_state["supply_shift"])) / (st.session_state["supply_slope"] - st.session_state["demand_slope"])
+    st.session_state["equilibrium_price_modified"] = st.session_state["demand_intercept"] + st.session_state["demand_shift"]  + st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_modified"]
+    if st.session_state["demand_shift"] != 0 and st.session_state["supply_shift"] == 0:
+        st.session_state["equilibrium_mc_prosppay_newquantity"] = st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_modified"]
+    elif st.session_state["demand_shift"] == 0 and st.session_state["supply_shift"] != 0:
+        st.session_state["equilibrium_mc_prosppay_newquantity"] = st.session_state["supply_intercept"] + st.session_state["supply_slope"] * st.session_state["equilibrium_quantity_modified"]
+    else:
+        st.session_state["equilibrium_mc_prosppay_newquantity"] = 0
+# After min/max price
+if st.session_state["mode"] == "pricelimits":    
+    if(st.session_state["min_price"]) > 0:
+        st.session_state["limit_quantity"] = (st.session_state["limit_price"] - st.session_state["demand_intercept"]) / st.session_state["demand_slope"]
+    if(st.session_state["max_price"]) > 0:
+        st.session_state["limit_quantity"] = (st.session_state["limit_price"] - st.session_state["supply_intercept"]) / st.session_state["supply_slope"]
+    st.session_state["equilibrium_quantity_modified"] = st.session_state["limit_quantity"]
+    st.session_state["equilibrium_price_modified"] = st.session_state["limit_price"]
 
 
 # --------  CALCULATE SURPLUS AREAS
 
-def calculate_surplus(demand_intercept, supply_intercept, equilibrium_price, equilibrium_quantity):
+def calculate_surplus_shifts(demand_intercept, supply_intercept, equilibrium_price, equilibrium_quantity):
     consumer_surplus = 0.5 * (demand_intercept - equilibrium_price) * equilibrium_quantity
     producer_surplus = 0.5 * (equilibrium_price - supply_intercept) * equilibrium_quantity
     return consumer_surplus, producer_surplus
 
-consumer_surplus_original, producer_surplus_original = calculate_surplus(
-    st.session_state["demand_intercept"], st.session_state["supply_intercept"], st.session_state["equilibrium_price_original"], st.session_state["equilibrium_quantity_original"])
-consumer_surplus_shifted, producer_surplus_shifted = calculate_surplus(
-    st.session_state["demand_intercept"] + st.session_state["demand_shift"], st.session_state["supply_intercept"] + st.session_state["supply_shift"], st.session_state["equilibrium_price_shifted"], st.session_state["equilibrium_quantity_shifted"])
 
+def calculate_surplus_limits(demand_intercept, supply_intercept, demand_slope, supply_slope, limit_price, limit_quantity, equilibrium_price):
+    if limit_price < equilibrium_price:
+        demand_price = (demand_intercept - demand_slope * limit_quantity)
+        supply_price = limit_price
+    else:
+        demand_price = limit_price
+        supply_price = supply_intercept + supply_slope * limit_quantity
+
+    base_consumer_surplus = 0.5*(demand_intercept - demand_price)
+    base_producer_surplus = 0.5*(supply_price - supply_intercept)        
+    distrib_surplus = (demand_price - supply_price) * limit_quantity
+	
+    if limit_price < equilibrium_price:
+        consumer_surplus = base_consumer_surplus
+        producer_surplus = base_producer_surplus + distrib_surplus
+    else:
+        consumer_surplus = base_consumer_surplus + distrib_surplus
+        producer_surplus = base_producer_surplus
+
+    return consumer_surplus, producer_surplus
+
+
+consumer_surplus_original, producer_surplus_original = calculate_surplus_shifts(
+    st.session_state["demand_intercept"], st.session_state["supply_intercept"], st.session_state["equilibrium_price_original"], st.session_state["equilibrium_quantity_original"])
+if st.session_state["shift"]:
+    consumer_surplus_modified, producer_surplus_modified = calculate_surplus_shifts(
+        st.session_state["demand_intercept"] + st.session_state["demand_shift"], st.session_state["supply_intercept"] + st.session_state["supply_shift"], st.session_state["equilibrium_price_modified"], st.session_state["equilibrium_quantity_modified"])
+if st.session_state["mode"] == "pricelimits":    
+    consumer_surplus_modified, producer_surplus_modified = calculate_surplus_limits(
+        st.session_state["demand_intercept"], st.session_state["supply_intercept"], st.session_state["demand_slope"], st.session_state["supply_slope"], st.session_state["limit_price"], st.session_state["limit_quantity"], st.session_state["equilibrium_price_original"])
 
 
 # --------  CREATE PLOT
@@ -304,7 +376,15 @@ if st.session_state["shift"]:
 ax.plot(st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"], marker="o", markersize=5, color=equilibrium_color)
 
 if st.session_state["shift"]:
-    ax.plot(st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"], marker="o", markersize=5, color=equilibrium_color)
+    ax.plot(st.session_state["equilibrium_quantity_modified"], st.session_state["equilibrium_price_modified"], marker="o", markersize=5, color=equilibrium_color)
+
+if st.session_state["mode"] == "pricelimits":
+    ax.plot([0, st.session_state["limit_quantity"]], 
+            [st.session_state["limit_price"], st.session_state["limit_price"]], 
+            color='gray', linestyle=':', linewidth=2)
+    ax.plot([st.session_state["limit_quantity"], st.session_state["limit_quantity"]], 
+            [st.session_state["limit_price"], 0], 
+            color='gray', linestyle=':', linewidth=2)
 
 # Plot surpluses if option is selected
 if surplus_option == get_translation("SURPLUS_ORIGINAL") or surplus_option == get_translation("SURPLUS_BOTH"):
@@ -316,34 +396,55 @@ if surplus_option == get_translation("SURPLUS_ORIGINAL") or surplus_option == ge
     producer_surplus_edges = [(0, st.session_state["supply_intercept"]), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (0, st.session_state["equilibrium_price_original"])]
     patch_producer_surplus = pt.Polygon(producer_surplus_edges, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha, label=get_translation("PRODUCER_SURPLUS_LABEL"))
     ax.add_patch(patch_producer_surplus)
-if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and st.session_state["shift"]:
-    # Shifted Consumer Surplus
-    consumer_surplus_edges_shifted = [(0, st.session_state["demand_intercept"]+st.session_state["demand_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (0, st.session_state["equilibrium_price_shifted"])]
-    patch_consumer_surplus_shifted = pt.Polygon(consumer_surplus_edges_shifted, closed=True, fill=True, edgecolor='none',facecolor=demand_color, alpha=alpha_shift, label=get_translation("CONSUMER_SURPLUS_SHIFTED_LABEL"))
-    ax.add_patch(patch_consumer_surplus_shifted)
-    # Shifted Producer Surplus
-    producer_surplus_edges_shifted = [(0, st.session_state["supply_intercept"]+st.session_state["supply_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (0, st.session_state["equilibrium_price_shifted"])]
-    patch_producer_surplus_shifted = pt.Polygon(producer_surplus_edges_shifted, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha_shift, label=get_translation("PRODUCER_SURPLUS_SHIFTED_LABEL"))
-    ax.add_patch(patch_producer_surplus_shifted)
-if show_deadweight_loss:
-    if st.session_state["equilibrium_mc_prosppay_newquantity"] != 0 and st.session_state["gov_intervention"]:
-        deadweight_loss_shifted = [(st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_mc_prosppay_newquantity"])]
-        patch_deadweight_loss = pt.Polygon(deadweight_loss_shifted, closed=True, fill=True, edgecolor='none',facecolor=deadweightloss_color, alpha=alpha_deadweight_loss, label=get_translation("DEADWEIGHT_LOSS_LABEL"))
-        ax.add_patch(patch_deadweight_loss)
-if show_gov:
-    if st.session_state["equilibrium_mc_prosppay_newquantity"] != 0 and st.session_state["gov_intervention"]:
-        if st.session_state["demand_shift"] != 0:
-            gov_incexp = [(0, st.session_state["demand_intercept"]), (0, st.session_state["demand_intercept"] + st.session_state["demand_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_mc_prosppay_newquantity"])]            
-        if st.session_state["supply_shift"] != 0:
-            gov_incexp = [(0, st.session_state["supply_intercept"]), (0, st.session_state["supply_intercept"] + st.session_state["supply_shift"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_price_shifted"]), (st.session_state["equilibrium_quantity_shifted"], st.session_state["equilibrium_mc_prosppay_newquantity"])]
-        if st.session_state["demand_shift"] < 0 or st.session_state["supply_shift"] > 0:
-            gov_color = gov_income_color
-            gov_text = get_translation("GOV_INCOME_LABEL")
+if st.session_state["mode"] == "shift" :
+    if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and st.session_state["shift"]:
+        # Shifted Consumer Surplus
+        consumer_surplus_edges_shifted = [(0, st.session_state["demand_intercept"]+st.session_state["demand_shift"]), (st.session_state["equilibrium_quantity_modified"], st.session_state["equilibrium_price_modified"]), (0, st.session_state["equilibrium_price_modified"])]
+        patch_consumer_surplus_shifted = pt.Polygon(consumer_surplus_edges_shifted, closed=True, fill=True, edgecolor='none',facecolor=demand_color, alpha=alpha_shift, label=get_translation("CONSUMER_SURPLUS_SHIFTED_LABEL"))
+        ax.add_patch(patch_consumer_surplus_shifted)
+        # Shifted Producer Surplus
+        producer_surplus_edges_shifted = [(0, st.session_state["supply_intercept"]+st.session_state["supply_shift"]), (st.session_state["equilibrium_quantity_modified"], st.session_state["equilibrium_price_modified"]), (0, st.session_state["equilibrium_price_modified"])]
+        patch_producer_surplus_shifted = pt.Polygon(producer_surplus_edges_shifted, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha_shift, label=get_translation("PRODUCER_SURPLUS_SHIFTED_LABEL"))
+        ax.add_patch(patch_producer_surplus_shifted)
+    if show_deadweight_loss:
+        if st.session_state["equilibrium_mc_prosppay_newquantity"] != 0 and st.session_state["gov_intervention"]:
+            deadweight_loss_shifted = [(st.session_state["equilibrium_quantity_modified"], st.session_state["equilibrium_price_modified"]), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (st.session_state["equilibrium_quantity_modified"], st.session_state["equilibrium_mc_prosppay_newquantity"])]
+            patch_deadweight_loss = pt.Polygon(deadweight_loss_shifted, closed=True, fill=True, edgecolor='none',facecolor=deadweightloss_color, alpha=alpha_deadweight_loss, label=get_translation("DEADWEIGHT_LOSS_LABEL"))
+            ax.add_patch(patch_deadweight_loss)
+    if show_gov:
+        if st.session_state["equilibrium_mc_prosppay_newquantity"] != 0 and st.session_state["gov_intervention"]:
+            if st.session_state["demand_shift"] != 0:
+                gov_incexp = [(0, st.session_state["demand_intercept"]), (0, st.session_state["demand_intercept"] + st.session_state["demand_shift"]), (st.session_state["equilibrium_quantity_modified"], st.session_state["equilibrium_price_modified"]), (st.session_state["equilibrium_quantity_modified"], st.session_state["equilibrium_mc_prosppay_newquantity"])]            
+            if st.session_state["supply_shift"] != 0:
+                gov_incexp = [(0, st.session_state["supply_intercept"]), (0, st.session_state["supply_intercept"] + st.session_state["supply_shift"]), (st.session_state["equilibrium_quantity_modified"], st.session_state["equilibrium_price_modified"]), (st.session_state["equilibrium_quantity_modified"], st.session_state["equilibrium_mc_prosppay_newquantity"])]
+            if st.session_state["demand_shift"] < 0 or st.session_state["supply_shift"] > 0:
+                gov_color = gov_income_color
+                gov_text = get_translation("GOV_INCOME_LABEL")
+            else:
+                gov_color = gov_expenses_color
+                gov_text = get_translation("GOV_EXPENSES_LABEL")
+            patch_gov = pt.Polygon(gov_incexp, closed=True, fill=True, edgecolor='none',facecolor=gov_color, alpha=alpha_gov, label=gov_text)
+            ax.add_patch(patch_gov)
+if st.session_state["mode"] == "pricelimits":
+    if surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH"):
+        if st.session_state["limit_price"] < st.session_state["equilibrium_price_original"]:
+            consumer_surplus_edges_limits = [(0, st.session_state["demand_intercept"]), (0, st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["limit_quantity"])]
+            producer_surplus_edges_limits = [(0, st.session_state["supply_intercept"]), (0, st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["limit_price"])]
         else:
-            gov_color = gov_expenses_color
-            gov_text = get_translation("GOV_EXPENSES_LABEL")
-        patch_gov = pt.Polygon(gov_incexp, closed=True, fill=True, edgecolor='none',facecolor=gov_color, alpha=alpha_gov, label=gov_text)
-        ax.add_patch(patch_gov)
+            consumer_surplus_edges_limits = [(0, st.session_state["demand_intercept"]), (0, st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["limit_price"])]
+            producer_surplus_edges_limits = [(0, st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["supply_intercept"] + st.session_state["supply_slope"] * st.session_state["limit_quantity"]), (0, st.session_state["supply_intercept"])]
+        patch_consumer_surplus_limits = pt.Polygon(consumer_surplus_edges_limits, closed=True, fill=True, edgecolor='none',facecolor=demand_color, alpha=alpha_shift, label=get_translation("CONSUMER_SURPLUS_SHIFTED_LABEL"))
+        ax.add_patch(patch_consumer_surplus_limits)
+        patch_producer_surplus_limits = pt.Polygon(producer_surplus_edges_limits, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha_shift, label=get_translation("PRODUCER_SURPLUS_SHIFTED_LABEL"))
+        ax.add_patch(patch_producer_surplus_limits)
+    if show_deadweight_loss:
+        if st.session_state["limit_price"] < st.session_state["equilibrium_price_original"]:
+            deadweight_loss_imits = [(st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (st.session_state["limit_quantity"], st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["limit_quantity"])]
+        else:
+            deadweight_loss_imits = [(st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (st.session_state["limit_quantity"], st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["supply_intercept"] + st.session_state["supply_slope"] * st.session_state["limit_quantity"])]
+        patch_deadweight_loss = pt.Polygon(deadweight_loss_imits, closed=True, fill=True, edgecolor='none',facecolor=deadweightloss_color, alpha=alpha_deadweight_loss, label=get_translation("DEADWEIGHT_LOSS_LABEL"))
+        ax.add_patch(patch_deadweight_loss)
+
 
 # Increase font size for axis labels and tick labels
 plt.rcParams.update({'font.size': 14})
@@ -421,15 +522,15 @@ if show_quant_results:
     st.markdown("#### " + get_translation("PRICES_LABEL"))
     outp = get_translation("EQUILIBRIUM_PRICE_ORIGINAL_LABEL") + " **" + str(round(st.session_state["equilibrium_price_original"], 2)) + "**"
     st.write(outp)
-    if st.session_state["shift"]:
-        outp = get_translation("EQUILIBRIUM_PRICE_SHIFTED_LABEL") + " **" + str(round(st.session_state["equilibrium_price_shifted"], 2)) + "**"
+    if (st.session_state["mode"] == "shift" and st.session_state["shift"]) or st.session_state["mode"]=="pricelimits":
+        outp = get_translation("EQUILIBRIUM_PRICE_SHIFTED_LABEL") + " **" + str(round(st.session_state["equilibrium_price_modified"], 2)) + "**"
         st.write(outp)
 
     st.markdown("#### " + get_translation("QUANTITIES_LABEL"))
     outp = get_translation("EQUILIBRIUM_QUANTITY_ORIGINAL_LABEL") + " **" + str(round(st.session_state["equilibrium_quantity_original"], 2)) + "**"
     st.write(outp)
-    if st.session_state["shift"]:
-        outp = get_translation("EQUILIBRIUM_QUANTITY_SHIFTED_LABEL") + " **" + str(round(st.session_state["equilibrium_quantity_shifted"], 2)) + "**"
+    if (st.session_state["mode"] == "shift" and st.session_state["shift"]) or st.session_state["mode"]=="pricelimits":
+        outp = get_translation("EQUILIBRIUM_QUANTITY_SHIFTED_LABEL") + " **" + str(round(st.session_state["equilibrium_quantity_modified"], 2)) + "**"
         st.write(outp)
 
     if surplus_option != get_translation("SURPLUS_NONE"):
@@ -437,8 +538,8 @@ if show_quant_results:
     if surplus_option == get_translation("SURPLUS_ORIGINAL") or surplus_option == get_translation("SURPLUS_BOTH"):
         outp = get_translation("CONSUMER_SURPLUS_ORIGINAL_LABEL") + " **" + str(round(consumer_surplus_original, 2)) + "**"
         st.write(outp)
-    if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and st.session_state["shift"]:
-        outp = get_translation("CONSUMER_SURPLUS_SHIFTED_LABEL") + " **" + str(round(consumer_surplus_shifted, 2)) + "**"
+    if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and ((st.session_state["mode"] == "shift" and st.session_state["shift"]) or st.session_state["mode"]=="pricelimits"):
+        outp = get_translation("CONSUMER_SURPLUS_SHIFTED_LABEL") + " **" + str(round(consumer_surplus_modified, 2)) + "**"
         st.write(outp)
 
     if surplus_option != get_translation("SURPLUS_NONE"):
@@ -446,8 +547,8 @@ if show_quant_results:
     if surplus_option == get_translation("SURPLUS_ORIGINAL") or surplus_option == get_translation("SURPLUS_BOTH"):
         outp = get_translation("PRODUCER_SURPLUS_ORIGINAL_LABEL") + " **" +  str(round(producer_surplus_original, 2)) + "**"
         st.write(outp)
-    if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and st.session_state["shift"]:
-        outp = get_translation("PRODUCER_SURPLUS_SHIFTED_LABEL") + " **" + str(round(producer_surplus_shifted, 2)) + "**"
+    if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and ((st.session_state["mode"] == "shift" and st.session_state["shift"]) or st.session_state["mode"]=="pricelimits"):
+        outp = get_translation("PRODUCER_SURPLUS_SHIFTED_LABEL") + " **" + str(round(producer_surplus_modified, 2)) + "**"
         st.write(outp)
 
     if surplus_option != get_translation("SURPLUS_NONE"):
@@ -455,8 +556,8 @@ if show_quant_results:
     if surplus_option == get_translation("SURPLUS_ORIGINAL") or surplus_option == get_translation("SURPLUS_BOTH"):
         outp = get_translation("TOTAL_WELFARE_ORIGINAL_LABEL") + " **" + str(round(consumer_surplus_original + producer_surplus_original, 2)) + "**"
         st.write(outp)
-    if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and st.session_state["shift"]:
-        outp = get_translation("TOTAL_WELFARE_SHIFTED_LABEL") + " **" + str(round(consumer_surplus_shifted + producer_surplus_shifted, 2)) + "**"
+    if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and ((st.session_state["mode"]=="shift" and st.session_state["shift"]) or st.session_state["mode"]=="pricelimits"):
+        outp = get_translation("TOTAL_WELFARE_SHIFTED_LABEL") + " **" + str(round(consumer_surplus_modified + producer_surplus_modified, 2)) + "**"
         st.write(outp)
 
 
