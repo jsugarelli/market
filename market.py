@@ -31,9 +31,9 @@ st.set_page_config(page_title=get_translation("TITLE"))
 
 # -------- CONFIGURATION AND SETUP --------
 
-# Set up OpenAI API key
-if secrets["OPENAI_API_KEY"]:
-    client = OpenAI(api_key=secrets["OPENAI_API_KEY"])
+# Check if OPENAI_API_KEY is in secrets
+if 'OPENAI_API_KEY' in st.secrets:
+    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])    
 
 
 
