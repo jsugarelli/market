@@ -8,16 +8,32 @@ import matplotlib.patches as pt
 import json
 import os
 from config import *
-from translations import translations, language_flags  # Import the translations and flags
+from translations import translations, language_flags
 from openai import OpenAI
 from streamlit import secrets
+
+
+
+# -------- TITLE --------
+
+# Initialize language
+if "language" not in st.session_state:
+    st.session_state["language"] = default_language
+
+# Add this function to get translations
+def get_translation(key):
+    return translations[st.session_state["language"]].get(key, key)
+
+# Set the page config after initializing language and defining get_translation
+st.set_page_config(page_title=get_translation("TITLE"))
 
 
 
 # -------- CONFIGURATION AND SETUP --------
 
 # Set up OpenAI API key
-client = OpenAI(api_key=secrets["OPENAI_API_KEY"])
+if secrets["OPENAI_API_KEY"]:
+    client = OpenAI(api_key=secrets["OPENAI_API_KEY"])
 
 
 
@@ -54,16 +70,11 @@ if "loaded" not in st.session_state:
     st.session_state["use_gallery"] = use_gallery
     st.session_state["use_ai"] = use_ai
     st.session_state["mode"]= "shift"
-    st.session_state["language"] = default_language
     st.session_state["loaded"] = True
 
 
 
 # -------- HELPER FUNCTIONS --------
-
-# Add this function to get translations
-def get_translation(key):
-    return translations[st.session_state["language"]].get(key, key)
 
 # Mode changes
 def mode_shifts():    
@@ -293,16 +304,19 @@ st.sidebar.header(get_translation("DISPLAY_HEADER"))
 
 # Create option to show surpluses
 st.sidebar.subheader(get_translation("SURPLUS_SUBHEADER"))
-surplus_option = st.sidebar.radio(label=get_translation("SURPLUS_RADIO_LABEL"), options=(get_translation("SURPLUS_NONE"), get_translation("SURPLUS_ORIGINAL"), get_translation("SURPLUS_SHIFTED"), get_translation("SURPLUS_BOTH")))
+surplus_option = st.sidebar.radio(label="", options=(get_translation("SURPLUS_NONE"), get_translation("SURPLUS_ORIGINAL"), get_translation("SURPLUS_SHIFTED"), get_translation("SURPLUS_BOTH")), label_visibility="collapsed")
+
 st.sidebar.subheader(get_translation("GOV_SURPLUS_SUBHEADER"))
 show_gov = st.sidebar.checkbox(get_translation("SHOW_GOV_CHECKBOX"))
 if show_gov and not st.session_state["gov_intervention"]:
-    st.sidebar.write(get_translation("GOV_INTERVENTION_WARNING"))
+    st.sidebar.warning(get_translation("GOV_INTERVENTION_WARNING"))
+
 st.sidebar.subheader(get_translation("DEADWEIGHT_LOSS_SUBHEADER"))
 show_deadweight_loss = st.sidebar.checkbox(get_translation("SHOW_DEADWEIGHT_LOSS_CHECKBOX"))
 if show_deadweight_loss and not st.session_state["gov_intervention"]:
-    st.sidebar.write(get_translation("GOV_INTERVENTION_WARNING"))
-st.sidebar.subheader(get_translation("QUANT_RESULTS_SUBHEADER"))
+    st.sidebar.warning(get_translation("GOV_INTERVENTION_WARNING"))
+
+st.sidebar.subheader(get_translation("QUANTITATIVE_RESULTS_SUBHEADER"))
 show_quant_results = st.sidebar.checkbox(get_translation("SHOW_QUANT_RESULTS_CHECKBOX"))
 
 
