@@ -402,7 +402,6 @@ plt.rcParams.update({'font.size': 14})
 # Graph style
 ax.set_xlabel(get_translation("QUANTITY_LABEL"), fontsize=16)
 ax.set_ylabel(get_translation("PRICE_LABEL"), fontsize=16)
-ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=14)
 ax.spines["top"].set_visible(False)
 ax.spines["right"].set_visible(False)
 ax.spines['bottom'].set_position("zero")
@@ -434,16 +433,23 @@ if st.session_state["show_grid"]:
 fig.set_size_inches(12, 8)
 plt.tight_layout()
 
+# Add legend to the right center of the graph
+ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=16)
+
 
 
 # -------- PLOTTING: CONTENT --------
 
 # Plot original and shifted demand and supply curves
-ax.plot(x, st.session_state["demand_slope"] * x + st.session_state["demand_intercept"], label=get_translation("DEMAND_LABEL"), color=demand_color)
-ax.plot(x, st.session_state["supply_slope"] * x + st.session_state["supply_intercept"], label=get_translation("SUPPLY_LABEL"), color=supply_color)
+demand_line, = ax.plot(x, st.session_state["demand_slope"] * x + st.session_state["demand_intercept"], label=get_translation("DEMAND_LABEL"), color=demand_color)
+supply_line, = ax.plot(x, st.session_state["supply_slope"] * x + st.session_state["supply_intercept"], label=get_translation("SUPPLY_LABEL"), color=supply_color)
+
+legend_elements = [demand_line, supply_line]
+
 if st.session_state["shift"]:    
-    ax.plot(x, st.session_state["demand_slope"] * x + st.session_state["demand_intercept"] + st.session_state["demand_shift"], label=get_translation("DEMAND_SHIFTED_LABEL"), linestyle="dotted", color=demand_color)
-    ax.plot(x, st.session_state["supply_slope"] * x + st.session_state["supply_intercept"] + st.session_state["supply_shift"], label=get_translation("SUPPLY_SHIFTED_LABEL"), linestyle="dotted", color=supply_color)
+    demand_shifted, = ax.plot(x, st.session_state["demand_slope"] * x + st.session_state["demand_intercept"] + st.session_state["demand_shift"], label=get_translation("DEMAND_SHIFTED_LABEL"), linestyle="dotted", color=demand_color)
+    supply_shifted, = ax.plot(x, st.session_state["supply_slope"] * x + st.session_state["supply_intercept"] + st.session_state["supply_shift"], label=get_translation("SUPPLY_SHIFTED_LABEL"), linestyle="dotted", color=supply_color)
+    legend_elements.extend([demand_shifted, supply_shifted])
 
 # Plot equilibrium points before changes
 ax.plot(st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"], marker="o", markersize=5, color=equilibrium_color)
@@ -468,11 +474,13 @@ if surplus_option == get_translation("SURPLUS_ORIGINAL") or surplus_option == ge
     consumer_surplus_edges = [(0, st.session_state["demand_intercept"]), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (0, st.session_state["equilibrium_price_original"])]
     patch_consumer_surplus = pt.Polygon(consumer_surplus_edges, closed=True, fill=True, edgecolor='none',facecolor=demand_color, alpha=alpha, label=get_translation("CONSUMER_SURPLUS_LABEL"))
     ax.add_patch(patch_consumer_surplus)
+    legend_elements.append(patch_consumer_surplus)
     
     # Original producer surplus
     producer_surplus_edges = [(0, st.session_state["supply_intercept"]), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (0, st.session_state["equilibrium_price_original"])]
     patch_producer_surplus = pt.Polygon(producer_surplus_edges, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha, label=get_translation("PRODUCER_SURPLUS_LABEL"))
     ax.add_patch(patch_producer_surplus)
+    legend_elements.append(patch_producer_surplus)
 
 # Plot welfare after shifts depending on view options
 if st.session_state["mode"] == "shift" :
@@ -482,18 +490,21 @@ if st.session_state["mode"] == "shift" :
         consumer_surplus_edges_shifted = [(0, st.session_state["demand_intercept"]+st.session_state["demand_shift"]), (st.session_state["equilibrium_quantity_modified"], st.session_state["equilibrium_price_modified"]), (0, st.session_state["equilibrium_price_modified"])]
         patch_consumer_surplus_shifted = pt.Polygon(consumer_surplus_edges_shifted, closed=True, fill=True, edgecolor='none',facecolor=demand_color, alpha=alpha_shift, label=get_translation("CONSUMER_SURPLUS_SHIFTED_LABEL"))
         ax.add_patch(patch_consumer_surplus_shifted)
+        legend_elements.append(patch_consumer_surplus_shifted)
         
         # Producer surplus
         producer_surplus_edges_shifted = [(0, st.session_state["supply_intercept"]+st.session_state["supply_shift"]), (st.session_state["equilibrium_quantity_modified"], st.session_state["equilibrium_price_modified"]), (0, st.session_state["equilibrium_price_modified"])]
         patch_producer_surplus_shifted = pt.Polygon(producer_surplus_edges_shifted, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha_shift, label=get_translation("PRODUCER_SURPLUS_SHIFTED_LABEL"))
         ax.add_patch(patch_producer_surplus_shifted)
+        legend_elements.append(patch_producer_surplus_shifted)
 
-        # Deadweight loss
+    # Deadweight loss
     if show_deadweight_loss:
         if st.session_state["equilibrium_mc_prosppay_newquantity"] != 0 and st.session_state["gov_intervention"]:
             deadweight_loss_shifted = [(st.session_state["equilibrium_quantity_modified"], st.session_state["equilibrium_price_modified"]), (st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (st.session_state["equilibrium_quantity_modified"], st.session_state["equilibrium_mc_prosppay_newquantity"])]
             patch_deadweight_loss = pt.Polygon(deadweight_loss_shifted, closed=True, fill=True, edgecolor='none',facecolor=deadweightloss_color, alpha=alpha_deadweight_loss, label=get_translation("DEADWEIGHT_LOSS_LABEL"))
             ax.add_patch(patch_deadweight_loss)
+            legend_elements.append(patch_deadweight_loss)
 
     # Plot government surplus after shifts depending on view options
     if show_gov:
@@ -510,6 +521,7 @@ if st.session_state["mode"] == "shift" :
                 gov_text = get_translation("GOV_EXPENSES_LABEL")
             patch_gov = pt.Polygon(gov_incexp, closed=True, fill=True, edgecolor='none',facecolor=gov_color, alpha=alpha_gov, label=gov_text)
             ax.add_patch(patch_gov)
+            legend_elements.append(patch_gov)
 
 # Plot welfare after min/max prices depending on view options
 if st.session_state["mode"] == "pricelimits":
@@ -524,8 +536,10 @@ if st.session_state["mode"] == "pricelimits":
             producer_surplus_edges_limits = [(0, st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["supply_intercept"] + st.session_state["supply_slope"] * st.session_state["limit_quantity"]), (0, st.session_state["supply_intercept"])]
         patch_consumer_surplus_limits = pt.Polygon(consumer_surplus_edges_limits, closed=True, fill=True, edgecolor='none',facecolor=demand_color, alpha=alpha_shift, label=get_translation("CONSUMER_SURPLUS_SHIFTED_LABEL"))
         ax.add_patch(patch_consumer_surplus_limits)
+        legend_elements.append(patch_consumer_surplus_limits)
         patch_producer_surplus_limits = pt.Polygon(producer_surplus_edges_limits, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha_shift, label=get_translation("PRODUCER_SURPLUS_SHIFTED_LABEL"))
         ax.add_patch(patch_producer_surplus_limits)
+        legend_elements.append(patch_producer_surplus_limits)
     
     # Plot deadweight loss after min/max prices
     if show_deadweight_loss:
@@ -535,9 +549,12 @@ if st.session_state["mode"] == "pricelimits":
             deadweight_loss_imits = [(st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (st.session_state["limit_quantity"], st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["supply_intercept"] + st.session_state["supply_slope"] * st.session_state["limit_quantity"])]
         patch_deadweight_loss = pt.Polygon(deadweight_loss_imits, closed=True, fill=True, edgecolor='none',facecolor=deadweightloss_color, alpha=alpha_deadweight_loss, label=get_translation("DEADWEIGHT_LOSS_LABEL"))
         ax.add_patch(patch_deadweight_loss)
+        legend_elements.append(patch_deadweight_loss)
+
+# Add the legend to the right center of the graph
+ax.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1, 0.5), fontsize=16)
 
 st.pyplot(fig)
-
 
 
 # -------- TEXTUAL COMMENTS --------
