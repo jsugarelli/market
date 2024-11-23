@@ -83,7 +83,8 @@ translations = {
         "FIX_AXES_CHECKBOX": "Achsen fixieren",
         "SHOW_GRID_CHECKBOX": "Gitter anzeigen",
         "TICKMARK_WIDTH_LABEL": "Strichabstand auf Achsen",
-        "ABOUT_EXPANDER": "Über",
+        "LINE_THICKNESS_LABEL": "Linienstärke",
+        "ABOUT_EXPANDER": "Hilfe & Über",
         "VERSION_LABEL": "Version: 0.3"
     },
     "en": {
@@ -165,7 +166,8 @@ translations = {
         "FIX_AXES_CHECKBOX": "Fix Axes",
         "SHOW_GRID_CHECKBOX": "Show Grid",
         "TICKMARK_WIDTH_LABEL": "Tickmark Width",
-        "ABOUT_EXPANDER": "About",
+        "LINE_THICKNESS_LABEL": "Line Thickness",
+        "ABOUT_EXPANDER": "Help & About",
         "VERSION_LABEL": "Version: 0.3"
     }
 }

@@ -70,6 +70,7 @@ if "loaded" not in st.session_state:
     st.session_state["use_gallery"] = use_gallery
     st.session_state["use_ai"] = use_ai
     st.session_state["mode"]= "shift"
+    st.session_state["line_thickness"] = 2.0
     st.session_state["loaded"] = True
 
 
@@ -172,12 +173,14 @@ def callback_params():
     st.session_state["fix_axes"] = st.session_state.fix_axes_checkbox
     st.session_state["show_grid"] = st.session_state.show_grid_checkbox
     st.session_state["tickmark_width"] = st.session_state.tickmark_input
+    st.session_state["line_thickness"] = float(st.session_state.line_thickness_input)
 
 def callback_reset():
     st.session_state["demand_slope"] = demand_slope
     st.session_state["demand_intercept"] = demand_intercept
     st.session_state["supply_slope"] = supply_slope
     st.session_state["supply_intercept"] = supply_intercept
+    st.session_state["line_thickness"] = 2.0
 
 def callback_gov():
     st.session_state["gov_intervention"] = not st.session_state["gov_intervention"]
@@ -441,14 +444,14 @@ ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=16)
 # -------- PLOTTING: CONTENT --------
 
 # Plot original and shifted demand and supply curves
-demand_line, = ax.plot(x, st.session_state["demand_slope"] * x + st.session_state["demand_intercept"], label=get_translation("DEMAND_LABEL"), color=demand_color)
-supply_line, = ax.plot(x, st.session_state["supply_slope"] * x + st.session_state["supply_intercept"], label=get_translation("SUPPLY_LABEL"), color=supply_color)
+demand_line, = ax.plot(x, st.session_state["demand_slope"] * x + st.session_state["demand_intercept"], label=get_translation("DEMAND_LABEL"), color=demand_color, linewidth=st.session_state["line_thickness"])
+supply_line, = ax.plot(x, st.session_state["supply_slope"] * x + st.session_state["supply_intercept"], label=get_translation("SUPPLY_LABEL"), color=supply_color, linewidth=st.session_state["line_thickness"])
 
 legend_elements = [demand_line, supply_line]
 
 if st.session_state["shift"]:    
-    demand_shifted, = ax.plot(x, st.session_state["demand_slope"] * x + st.session_state["demand_intercept"] + st.session_state["demand_shift"], label=get_translation("DEMAND_SHIFTED_LABEL"), linestyle="dotted", color=demand_color)
-    supply_shifted, = ax.plot(x, st.session_state["supply_slope"] * x + st.session_state["supply_intercept"] + st.session_state["supply_shift"], label=get_translation("SUPPLY_SHIFTED_LABEL"), linestyle="dotted", color=supply_color)
+    demand_shifted, = ax.plot(x, st.session_state["demand_slope"] * x + st.session_state["demand_intercept"] + st.session_state["demand_shift"], label=get_translation("DEMAND_SHIFTED_LABEL"), linestyle="dotted", color=demand_color, linewidth=st.session_state["line_thickness"])
+    supply_shifted, = ax.plot(x, st.session_state["supply_slope"] * x + st.session_state["supply_intercept"] + st.session_state["supply_shift"], label=get_translation("SUPPLY_SHIFTED_LABEL"), linestyle="dotted", color=supply_color, linewidth=st.session_state["line_thickness"])
     legend_elements.extend([demand_shifted, supply_shifted])
 
 # Plot equilibrium points before changes
@@ -683,6 +686,7 @@ with st.sidebar.expander(get_translation("CURVE_PARAMS_EXPANDER")):
     st.text_input(get_translation("DEMAND_INTERCEPT_LABEL"), value=str(st.session_state["demand_intercept"]), key="demand_intercept_slider", on_change=callback_params)
     st.text_input(get_translation("SUPPLY_SLOPE_LABEL"), value=str(st.session_state["supply_slope"]), key="supply_slope_slider", on_change=callback_params)
     st.text_input(get_translation("SUPPLY_INTERCEPT_LABEL"), value=str(st.session_state["supply_intercept"]), key="supply_intercept_slider", on_change=callback_params)
+    st.number_input(get_translation("LINE_THICKNESS_LABEL"), value=st.session_state["line_thickness"], step=0.1, min_value=0.1, max_value=5.0, format="%.1f", key="line_thickness_input", on_change=callback_params)
     st.button(get_translation("RESET_BUTTON"), on_click=callback_reset)
 
 # Settings for graphs
@@ -706,3 +710,10 @@ with st.sidebar.expander(get_translation("API_SETTINGS_EXPANDER")):
 # About page
 with st.sidebar.expander(get_translation("ABOUT_EXPANDER")):
     st.write(get_translation("VERSION_LABEL"))
+    st.write("Joachim Zuckarelli")
+    
+    col1, col2 = st.columns([1, 4])
+    with col1:
+        st.image("social-github-col.png", width=30)
+    with col2:
+        st.markdown("[GitHub](https://github.com/jsugarelli/market)")
