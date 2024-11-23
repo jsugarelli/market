@@ -1,7 +1,14 @@
-# Set title
-title = "Vollkommener Wettbewerbsmarkt"
+# ----------- HEADER -----------
 
-# View settings
+title = "Vollkommener Wettbewerbsmarkt"
+logo = "logo.png"
+max_logo_height = 150
+disclaimer_text = ""
+ask_confirmation = True
+
+
+# ----------- VIEW SETTINGS -----------
+
 demand_slope = -1
 demand_intercept = 10
 supply_slope = 1
@@ -17,12 +24,16 @@ alpha_shift = 0.2
 alpha_gov = 0.6
 alpha_deadweight_loss = 0.6
 
-# Features
+
+# ----------- FEATURES -----------
+
 use_gallery = True
-use_ai = False
+use_ai = True
 default_language = "de"
 
-# AI parameters
+
+# ----------- AI PARAMETERS -----------
+
 ai_system_message = """
 You are an expert in microeconomics. Analyze the given scenario and determine the appropriate shifts in demand and supply curves (use shifts in the range [-3,+3]). 
 Provide your response in a structured format with fields for status, shift_demand, shift_supply, comment, and a binary field gov_intervention (values "true", "false") if the scenario involves demand/supply shift is due to a government intervention. 

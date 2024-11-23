@@ -11,6 +11,7 @@ from config import *
 from translations import translations, language_flags
 from openai import OpenAI
 from streamlit import secrets
+from PIL import Image
 
 
 
@@ -26,6 +27,54 @@ def get_translation(key):
 
 # Set the page config after initializing language and defining get_translation
 st.set_page_config(page_title=get_translation("TITLE"))
+
+if 'disclaimer_confirmed' not in st.session_state:
+    st.session_state.disclaimer_confirmed = False
+
+# Display disclaimer if not yet confirmed and disclaimer_text is not empty
+if not st.session_state.disclaimer_confirmed and disclaimer_text != "":
+    disclaimer_container = st.container()
+    with disclaimer_container:
+        st.markdown(
+            f"""
+            <div style="background-color: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 20px">
+                {disclaimer_text}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        if ask_confirmation:
+            if st.checkbox(get_translation("CONFIRM_CHECKBOX")):
+                st.session_state.disclaimer_confirmed = True
+                st.rerun()
+
+# Display logo if file exists
+try:
+    if os.path.exists(logo):
+        desired_height = 60
+        if "max_logo_height" in globals():
+            try:
+                if isinstance(max_logo_height, (int, float)) and max_logo_height > 0:
+                    desired_height = max_logo_height
+            except:
+                pass
+        
+        # Load image and calculate dimensions
+        img = Image.open(logo)
+        aspect_ratio = img.size[0] / img.size[1]  # width / height
+        desired_width = int(desired_height * aspect_ratio)
+        
+        # Create three columns with wider side columns for better centering
+        left_col, center_col, right_col = st.columns([2, 1, 2])
+        with center_col:
+            st.image(logo, width=desired_width)
+except:
+    pass
+
+# Create Streamlit application
+st.title(get_translation("TITLE"))
+st.markdown("<br>", unsafe_allow_html=True)
 
 
 
@@ -220,10 +269,6 @@ def callback_pricelimits():
 
 
 # -------- UI COMPONENTS I OF II--------
-
-# Create Streamlit application
-st.title(get_translation("TITLE"))
-st.markdown("<br>", unsafe_allow_html=True)
 
 # Create tabs for controls
 st.subheader(get_translation("INPUTS_SUBHEADER"), divider="gray")
@@ -686,7 +731,6 @@ with st.sidebar.expander(get_translation("CURVE_PARAMS_EXPANDER")):
     st.text_input(get_translation("DEMAND_INTERCEPT_LABEL"), value=str(st.session_state["demand_intercept"]), key="demand_intercept_slider", on_change=callback_params)
     st.text_input(get_translation("SUPPLY_SLOPE_LABEL"), value=str(st.session_state["supply_slope"]), key="supply_slope_slider", on_change=callback_params)
     st.text_input(get_translation("SUPPLY_INTERCEPT_LABEL"), value=str(st.session_state["supply_intercept"]), key="supply_intercept_slider", on_change=callback_params)
-    st.number_input(get_translation("LINE_THICKNESS_LABEL"), value=st.session_state["line_thickness"], step=0.1, min_value=0.1, max_value=5.0, format="%.1f", key="line_thickness_input", on_change=callback_params)
     st.button(get_translation("RESET_BUTTON"), on_click=callback_reset)
 
 # Settings for graphs
@@ -694,6 +738,7 @@ with st.sidebar.expander(get_translation("GRAPH_PARAMS_EXPANDER")):
     st.checkbox(get_translation("FIX_AXES_CHECKBOX"), value=st.session_state["fix_axes"], key="fix_axes_checkbox", on_change=callback_params)
     st.checkbox(get_translation("SHOW_GRID_CHECKBOX"), value=st.session_state["show_grid"], key="show_grid_checkbox", on_change=callback_params)
     st.number_input(get_translation("TICKMARK_WIDTH_LABEL"), value=st.session_state["tickmark_width"], step=0.5, min_value=0.5, max_value=5.0, format="%.1f", key="tickmark_input", on_change=callback_params)
+    st.number_input(get_translation("LINE_THICKNESS_LABEL"), value=st.session_state["line_thickness"], step=0.1, min_value=0.1, max_value=5.0, format="%.1f", key="line_thickness_input", on_change=callback_params)
 
 # Settings for OpenAI API
 with st.sidebar.expander(get_translation("API_SETTINGS_EXPANDER")):

@@ -85,7 +85,8 @@ translations = {
         "TICKMARK_WIDTH_LABEL": "Strichabstand auf Achsen",
         "LINE_THICKNESS_LABEL": "Linienstärke",
         "ABOUT_EXPANDER": "Hilfe & Über",
-        "VERSION_LABEL": "Version: 0.3"
+        "VERSION_LABEL": "Version: 0.3",
+        "CONFIRM_CHECKBOX": "Ich bestätige"
     },
     "en": {
         "TITLE": "Perfect Competition Market",
@@ -168,6 +169,7 @@ translations = {
         "TICKMARK_WIDTH_LABEL": "Tickmark Width",
         "LINE_THICKNESS_LABEL": "Line Thickness",
         "ABOUT_EXPANDER": "Help & About",
-        "VERSION_LABEL": "Version: 0.3"
+        "VERSION_LABEL": "Version: 0.3",
+        "CONFIRM_CHECKBOX": "I confirm"
     }
 }
