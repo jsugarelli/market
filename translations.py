@@ -86,7 +86,9 @@ translations = {
         "LINE_THICKNESS_LABEL": "Linienstärke",
         "ABOUT_EXPANDER": "Hilfe & Über",
         "VERSION_LABEL": "Version: 0.3",
-        "CONFIRM_CHECKBOX": "Ich bestätige"
+        "CONFIRM_CHECKBOX": "Ich bestätige",
+        "EXAMPLE_SCENARIO_LABEL": "Beispielszenario:",
+        "EXAMPLE_SCENARIO_TEXT": "Die Löhne der Autoarbeiter im Markt für Elektroautos steigen"
     },
     "en": {
         "TITLE": "Perfect Competition Market",
@@ -170,6 +172,8 @@ translations = {
         "LINE_THICKNESS_LABEL": "Line Thickness",
         "ABOUT_EXPANDER": "Help & About",
         "VERSION_LABEL": "Version: 0.3",
-        "CONFIRM_CHECKBOX": "I confirm"
+        "CONFIRM_CHECKBOX": "I confirm",
+        "EXAMPLE_SCENARIO_LABEL": "Example scenario:",
+        "EXAMPLE_SCENARIO_TEXT": "Wages for car workers in the electric car market are rising"
     }
 }

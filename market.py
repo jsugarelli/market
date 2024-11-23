@@ -188,7 +188,6 @@ def mode_pricelimits():
     st.session_state["equilibrium_price_modified"] = 0
     st.session_state["equilibrium_mc_prosppay_newquantity"] = 0    
 
-
 # Call the API
 def call_openrouter_api(user_input):
     try:                
@@ -298,7 +297,7 @@ def callback_pricelimits():
 
 
 
-# -------- UI COMPONENTS I OF II--------
+# -------- UI COMPONENTS I OF II --------
 
 # Create tabs for controls
 st.subheader(get_translation("INPUTS_SUBHEADER"), divider="gray")
@@ -357,6 +356,18 @@ if st.session_state["use_gallery"]:
 if st.session_state["use_ai"]:
     with tabs[-1]:
         st.write(get_translation("AI_INSTRUCTIONS"))
+        
+        # Add example scenario description in a box
+        st.markdown(
+            f"""
+            <div style="background-color: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+                <strong>{get_translation("EXAMPLE_SCENARIO_LABEL")}</strong><br>
+                {get_translation("EXAMPLE_SCENARIO_TEXT")}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        
         user_input = st.text_area(get_translation("AI_INPUT_LABEL"), height=150)
         if st.button(get_translation("ANALYZE_BUTTON")):
             with st.spinner(get_translation("ANALYZING_MESSAGE")):
