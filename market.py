@@ -12,6 +12,50 @@ from translations import translations, language_flags
 from openai import OpenAI
 from streamlit import secrets
 from PIL import Image
+import requests
+import time
+
+# ----------- OPENROUTER -----------
+
+def query_openrouter(system_message, user_prompt, model_name, temperature=0.2, preferred_providers=None):
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    
+    if "user_api_key" in st.session_state:
+        user_api_key = st.session_state["user_api_key"]
+    else:
+        user_api_key = secrets["API_KEY"]
+
+    headers = {
+        "Authorization": f"Bearer {user_api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    data = {
+        "model": model_name,
+        "messages": [
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": user_prompt}
+        ],
+        "temperature": temperature
+    }
+    
+    if preferred_providers:
+        data["providers"] = preferred_providers
+    
+    try:
+        start_time = time.time()
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()
+        end_time = time.time()
+        
+        result = response.json()
+        response_text = result['choices'][0]['message']['content']
+        generation_time = end_time - start_time
+        
+        return response_text, generation_time
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return "", 0
 
 
 
@@ -81,8 +125,8 @@ st.markdown("<br>", unsafe_allow_html=True)
 # -------- CONFIGURATION AND SETUP --------
 
 # Check if OPENAI_API_KEY is in secrets
-if 'OPENAI_API_KEY' in st.secrets:
-    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])    
+if "API_KEY" in st.secrets:
+    client = OpenAI(api_key=st.secrets["API_KEY"])    
 
 
 
@@ -145,57 +189,43 @@ def mode_pricelimits():
     st.session_state["equilibrium_mc_prosppay_newquantity"] = 0    
 
 
-# Add this function to call the OpenAI API
-def call_openai_api(user_input):
-    try:        
-        print("Attempting to call OpenAI API...")
-        # Use the user's API key if provided, otherwise use the default
-        api_key = st.session_state.get("user_api_key", secrets["OPENAI_API_KEY"])
-        client = OpenAI(api_key=api_key)
-        
-        response = client.chat.completions.create(
-            model=ai_model,
-            messages=[
-                {"role": "system", "content": ai_system_message.replace("<LANGUAGE>", st.session_state["language"])},
-                {"role": "user", "content": user_input}
-            ],
+# Call the API
+def call_openrouter_api(user_input):
+    try:                
+        response_text, generation_time = query_openrouter(
+            system_message=ai_system_message.replace("<LANGUAGE>", st.session_state["language"]),
+            user_prompt=user_input,
+            model_name=ai_model,
             temperature=ai_temperature
-        )        
-        content = response.choices[0].message.content
-        print("Raw API response:", content)  # Debug print
-        return content
+        )
+        
+        print("Raw API response:", response_text)  # Debug print
+        return response_text
     except Exception as e:
         print(f"Error in API call: {str(e)}")  # Debug print
         error_message = get_translation("API_ERROR_WARNING")
         st.warning(f"{error_message}: {str(e)}")
         return f"Error: {str(e)}"
 
-# Add this function to parse the API response
+# Parse the API response
 def parse_api_response(response):
-    print("Raw API response:", response)  # Debug print
     try:
-        # First, try to parse the response as JSON
         result = json.loads(response)
     except json.JSONDecodeError:
-        print("Failed to parse response as JSON, attempting to parse as key-value pairs")
-        # If JSON parsing fails, parse as a simple key-value format
         lines = response.strip().split('\n')
         result = {}
         for line in lines:
             parts = line.split(':', 1)
             if len(parts) == 2:
                 key, value = parts
-                result[key.strip()] = value.strip()
+                result[key.strip()] = value.strip()    
     
-    print("Parsed result:", result)  # Debug print
-    
-    # Extract values with error handling
     try:
         return {
             "status": result.get("status", "okay"),
             "shift_demand": float(result.get("shift_demand", 0) or 0),
             "shift_supply": float(result.get("shift_supply", 0) or 0),
-            "gov_intervention": result.get("gov_intervention", "False").lower() == "true",
+            "gov_intervention": bool(result.get("gov_intervention", "False"))   ,
             "comment": result.get("comment", "")
         }
     except Exception as e:
@@ -330,7 +360,7 @@ if st.session_state["use_ai"]:
         user_input = st.text_area(get_translation("AI_INPUT_LABEL"), height=150)
         if st.button(get_translation("ANALYZE_BUTTON")):
             with st.spinner(get_translation("ANALYZING_MESSAGE")):
-                api_response = call_openai_api(user_input)
+                api_response = call_openrouter_api(user_input)
                 result = parse_api_response(api_response)
                 st.session_state["ai_result"] = result
                 
