@@ -1,7 +1,7 @@
 # ----------- HEADER -----------
 
 title = "Vollkommener Wettbewerbsmarkt"
-logo = "logo.png"
+logo = ""
 max_logo_height = 150
 disclaimer_text = ""
 ask_confirmation = True

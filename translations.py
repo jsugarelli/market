@@ -88,7 +88,9 @@ translations = {
         "VERSION_LABEL": "Version: 0.3",
         "CONFIRM_CHECKBOX": "Ich bestätige",
         "EXAMPLE_SCENARIO_LABEL": "Beispielszenario:",
-        "EXAMPLE_SCENARIO_TEXT": "Die Löhne der Autoarbeiter im Markt für Elektroautos steigen"
+        "EXAMPLE_SCENARIO_TEXT": "Die Löhne der Autoarbeiter im Markt für Elektroautos steigen",
+        "ELASTICITY_LABEL_DEMAND": "Elastizität Nachfrage (Betrag)",
+        "ELASTICITY_LABEL_SUPPLY": "Elastizität Angebot (Betrag)"
     },
     "en": {
         "TITLE": "Perfect Competition Market",
@@ -174,6 +176,8 @@ translations = {
         "VERSION_LABEL": "Version: 0.3",
         "CONFIRM_CHECKBOX": "I confirm",
         "EXAMPLE_SCENARIO_LABEL": "Example scenario:",
-        "EXAMPLE_SCENARIO_TEXT": "Wages for car workers in the electric car market are rising"
+        "EXAMPLE_SCENARIO_TEXT": "Wages for car workers in the electric car market are rising",
+        "ELASTICITY_LABEL_DEMAND": "Demand Elasticity (abs.)",
+        "ELASTICITY_LABEL_SUPPLY": "Supply Elasticity (abs.)"
     }
 }
