@@ -168,7 +168,7 @@ if "loaded" not in st.session_state:
     st.session_state["tickmark_width"] = 1.0
     st.session_state["use_gallery"] = use_gallery
     st.session_state["use_ai"] = use_ai
-    st.session_state["mode"]= "shift"
+    st.session_state["mode"] = "shift"
     st.session_state["line_thickness"] = 2.0
     st.session_state["loaded"] = True
 
@@ -193,6 +193,8 @@ def mode_pricelimits():
     st.session_state["equilibrium_quantity_modified"] = 0        
     st.session_state["equilibrium_price_modified"] = 0
     st.session_state["equilibrium_mc_prosppay_newquantity"] = 0
+    if "ai_result" in st.session_state:
+        del st.session_state["ai_result"]
 
 # Call the API
 def call_openrouter_api(user_input):
@@ -244,10 +246,38 @@ def parse_api_response(response):
 
 def callback_shifts():    
     mode_shifts()
-    st.session_state["demand_shift"] = float(st.session_state.slider1)
-    st.session_state["supply_shift"] = float(st.session_state.slider2)
+    
+    # Store previous shift values
+    prev_demand_shift = st.session_state["demand_shift"]
+    prev_supply_shift = st.session_state["supply_shift"]
+    
+    # Get the new shift values
+    new_demand_shift = float(st.session_state.slider1)
+    new_supply_shift = float(st.session_state.slider2)
+    
+    # If demand shift is changing from zero to non-zero and supply shift is non-zero
+    if new_demand_shift != 0 and prev_demand_shift == 0 and prev_supply_shift != 0:
+        st.session_state["supply_shift"] = 0
+        st.session_state.slider2 = 0
+    
+    # If supply shift is changing from zero to non-zero and demand shift is non-zero
+    if new_supply_shift != 0 and prev_supply_shift == 0 and prev_demand_shift != 0:
+        st.session_state["demand_shift"] = 0
+        st.session_state.slider1 = 0
+    
+    # Update the shifts that weren't zeroed out
+    if new_demand_shift != 0 and prev_demand_shift == 0:
+        st.session_state["demand_shift"] = new_demand_shift
+    elif new_supply_shift != 0 and prev_supply_shift == 0:
+        st.session_state["supply_shift"] = new_supply_shift
+    else:
+        st.session_state["demand_shift"] = new_demand_shift
+        st.session_state["supply_shift"] = new_supply_shift
+    
     st.session_state["shift"] = st.session_state["demand_shift"] != 0 or st.session_state["supply_shift"] != 0
-    st.session_state["gallery_selected"] = "(bitte wählen)"    
+    st.session_state["gallery_selected"] = "(bitte wählen)"
+    if "ai_result" in st.session_state:
+        del st.session_state["ai_result"]
 
 def callback_params():
     st.session_state["demand_slope"] = float(st.session_state.demand_slope_slider)
@@ -286,6 +316,8 @@ def callback_gov():
     
 def callback_scenarios():    
     mode_shifts()
+    if "ai_result" in st.session_state:
+        del st.session_state["ai_result"]
     scenario = st.session_state["gallery_choice"]
     st.session_state["gallery_selected"] = scenario
     if st.session_state["gallery_choice"] != "(bitte wählen)":
@@ -433,12 +465,12 @@ surplus_option = st.sidebar.radio(label="", options=(get_translation("SURPLUS_NO
 
 st.sidebar.subheader(get_translation("GOV_SURPLUS_SUBHEADER"))
 show_gov = st.sidebar.checkbox(get_translation("SHOW_GOV_CHECKBOX"))
-if show_gov and not st.session_state["gov_intervention"]:
+if show_gov and not st.session_state["gov_intervention"] and st.session_state["mode"] != "pricelimits":
     st.sidebar.warning(get_translation("GOV_INTERVENTION_WARNING"))
 
 st.sidebar.subheader(get_translation("DEADWEIGHT_LOSS_SUBHEADER"))
 show_deadweight_loss = st.sidebar.checkbox(get_translation("SHOW_DEADWEIGHT_LOSS_CHECKBOX"))
-if show_deadweight_loss and not st.session_state["gov_intervention"]:
+if show_deadweight_loss and not st.session_state["gov_intervention"] and st.session_state["mode"] != "pricelimits":
     st.sidebar.warning(get_translation("GOV_INTERVENTION_WARNING"))
 
 st.sidebar.subheader(get_translation("QUANTITATIVE_RESULTS_SUBHEADER"))
@@ -718,8 +750,8 @@ if st.session_state["use_ai"] and "ai_result" in st.session_state and st.session
         )
 
 # Display the pre-defined model comment for scenarios from the gallery
-if st.session_state["gallery_selected"] != "(bitte wählen)":
-    scenario = st.session_state["gallery_selected"]    
+if st.session_state["gallery_selected"] != "(bitte wählen)" and st.session_state["mode"] != "pricelimits":
+    scenario = st.session_state["gallery_selected"]
     st.markdown(
         """
         <div style="background-color: #ffffcc; padding: 10px; border-radius: 5px; margin-bottom:20px">
