@@ -833,9 +833,8 @@ st.sidebar.divider()
 st.sidebar.header(get_translation("SETTINGS_HEADER"))
 
 # Settings for language
-
 selected_flag = st.sidebar.selectbox(
-    "Language / Sprache",
+    get_translation("LANGUAGE_SELECTOR_LABEL"),
     options=list(language_flags.keys()),
     format_func=lambda x: language_flags[x],
     index=list(language_flags.keys()).index(st.session_state["language"]),
@@ -915,3 +914,10 @@ with st.sidebar.expander(get_translation("ABOUT_EXPANDER")):
         st.image("social-github-col.png", width=30)
     with col2:
         st.markdown("[GitHub](https://github.com/jsugarelli/market)")
+    
+    # Add email with bot protection but clickable
+    st.markdown(f"""
+        <a href="mailto:&#106;&#111;&#97;&#99;&#104;&#105;&#109;&#64;&#122;&#117;&#99;&#107;&#97;&#114;&#101;&#108;&#108;&#105;&#46;&#100;&#101;">
+            {get_translation("FEEDBACK_LABEL")}: joachim[at]zuckarelli[dot]de
+        </a>
+    """, unsafe_allow_html=True)
