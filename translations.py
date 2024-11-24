@@ -90,7 +90,11 @@ translations = {
         "EXAMPLE_SCENARIO_LABEL": "Beispielszenario:",
         "EXAMPLE_SCENARIO_TEXT": "Die Löhne der Autoarbeiter im Markt für Elektroautos steigen",
         "ELASTICITY_LABEL_DEMAND": "Elastizität Nachfrage (Betrag)",
-        "ELASTICITY_LABEL_SUPPLY": "Elastizität Angebot (Betrag)"
+        "ELASTICITY_LABEL_SUPPLY": "Elastizität Angebot (Betrag)",
+        "INCIDENCE_LABEL_TAX": "Steuerinzidenz",
+        "INCIDENCE_LABEL_SUBSIDY": "Subventioninzidenz",
+        "CONSUMER_INCIDENCE": "Anteil der Konsumenten",
+        "PRODUCER_INCIDENCE": "Anteil der Produzenten"
     },
     "en": {
         "TITLE": "Perfect Competition Market",
@@ -178,6 +182,10 @@ translations = {
         "EXAMPLE_SCENARIO_LABEL": "Example scenario:",
         "EXAMPLE_SCENARIO_TEXT": "Wages for car workers in the electric car market are rising",
         "ELASTICITY_LABEL_DEMAND": "Demand Elasticity (abs.)",
-        "ELASTICITY_LABEL_SUPPLY": "Supply Elasticity (abs.)"
+        "ELASTICITY_LABEL_SUPPLY": "Supply Elasticity (abs.)",
+        "INCIDENCE_LABEL_TAX": "Tax Incidence",
+        "INCIDENCE_LABEL_SUBSIDY": "Subsidy Incidence",
+        "CONSUMER_INCIDENCE": "Share of Consumers",
+        "PRODUCER_INCIDENCE": "Share of Producers"
     }
 }

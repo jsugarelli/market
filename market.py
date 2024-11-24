@@ -458,10 +458,13 @@ if st.session_state["shift"]:
     st.session_state["equilibrium_price_modified"] = st.session_state["demand_intercept"] + st.session_state["demand_shift"]  + st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_modified"]
     if st.session_state["demand_shift"] != 0 and st.session_state["supply_shift"] == 0:
         st.session_state["equilibrium_mc_prosppay_newquantity"] = st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_modified"]
+        st.session_state["equilibrium_mc_prosppay_oldquantity"] = st.session_state["demand_intercept"] + st.session_state["demand_shift"] + st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_original"]
     elif st.session_state["demand_shift"] == 0 and st.session_state["supply_shift"] != 0:
         st.session_state["equilibrium_mc_prosppay_newquantity"] = st.session_state["supply_intercept"] + st.session_state["supply_slope"] * st.session_state["equilibrium_quantity_modified"]
+        st.session_state["equilibrium_mc_prosppay_oldquantity"] = st.session_state["supply_intercept"] + st.session_state["supply_shift"] + st.session_state["supply_slope"] * st.session_state["equilibrium_quantity_original"]
     else:
         st.session_state["equilibrium_mc_prosppay_newquantity"] = 0
+        st.session_state["equilibrium_mc_prosppay_oldquantity"] = 0
 
 # Equilibrium price and quantity after min/max price
 if st.session_state["mode"] == "pricelimits":    
@@ -510,6 +513,22 @@ if st.session_state["mode"] == "pricelimits":
     consumer_surplus_modified, producer_surplus_modified = calculate_surplus_limits(
         st.session_state["demand_intercept"], st.session_state["supply_intercept"], st.session_state["demand_slope"], st.session_state["supply_slope"], st.session_state["limit_price"], st.session_state["limit_quantity"], st.session_state["equilibrium_price_original"])
 
+# Calculation of incidence
+if st.session_state["shift"]:
+    if st.session_state["demand_shift"] != 0:
+        shift = abs(st.session_state["demand_shift"])
+    elif st.session_state["supply_shift"] != 0:
+        shift = abs(st.session_state["supply_shift"])
+    if st.session_state["demand_shift"] != 0 and st.session_state["supply_shift"] == 0:
+        incidence_supply_abs = abs(st.session_state["equilibrium_price_original"] - st.session_state["equilibrium_price_modified"])
+        incidence_supply_rel = incidence_supply_abs / shift        
+        incidence_demand_abs = abs(st.session_state["equilibrium_price_modified"] - st.session_state["equilibrium_mc_prosppay_oldquantity"])
+        incidence_demand_rel = incidence_demand_abs / shift
+    elif st.session_state["supply_shift"] != 0 and st.session_state["demand_shift"] == 0:
+        incidence_demand_abs = abs(st.session_state["equilibrium_price_modified"] - st.session_state["equilibrium_price_original"])
+        incidence_demand_rel = incidence_demand_abs / shift
+        incidence_supply_abs = abs(st.session_state["equilibrium_mc_prosppay_oldquantity"] - st.session_state["equilibrium_price_modified"])
+        incidence_supply_rel = incidence_supply_abs / shift        
 
 
 # -------- PLOTTING: SETUP --------
@@ -705,7 +724,7 @@ if st.session_state["gallery_selected"] != "(bitte wählen)":
         """
         <div style="background-color: #ffffcc; padding: 10px; border-radius: 5px; margin-bottom:20px">
             <p style="color: black;">
-                <b> """ + scenario + """ </b><br> """ + st.session_state["gallery_entries"][scenario]["explain_text"] + """
+                <h5> """ + scenario + """ </h5><br> """ + st.session_state["gallery_entries"][scenario]["explain_text"] + """
             </p>
         </div>
         """,
@@ -760,6 +779,17 @@ if show_quant_results:
         st.write(outp)
     if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and ((st.session_state["mode"]=="shift" and st.session_state["shift"]) or st.session_state["mode"]=="pricelimits"):
         outp = get_translation("TOTAL_WELFARE_SHIFTED_LABEL") + " **" + str(round(consumer_surplus_modified + producer_surplus_modified, 2)) + "**"
+        st.write(outp)
+
+    if st.session_state["gov_intervention"]:
+        if st.session_state["demand_shift"] < 0 or st.session_state["supply_shift"] < 0:
+            incidence_label = get_translation("INCIDENCE_LABEL_TAX")
+        else:
+            incidence_label = get_translation("INCIDENCE_LABEL_SUBSIDY")        
+        st.markdown("#### " + incidence_label)
+        outp = get_translation("CONSUMER_INCIDENCE") + " **" + str(round(incidence_demand_abs, 2)) + " (" + str(round(incidence_demand_rel * 100, 1)) + "%)**"
+        st.write(outp)
+        outp = get_translation("PRODUCER_INCIDENCE") + " **" + str(round(incidence_supply_abs, 2)) + " (" + str(round(incidence_supply_rel * 100, 1)) + "%)**"
         st.write(outp)
 
 
