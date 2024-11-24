@@ -9,7 +9,6 @@ import json
 import os
 from config import *
 from translations import translations, language_flags
-from openai import OpenAI
 from streamlit import secrets
 from PIL import Image
 import requests
@@ -119,14 +118,6 @@ except:
 # Create Streamlit application
 st.title(get_translation("TITLE"))
 st.markdown("<br>", unsafe_allow_html=True)
-
-
-
-# -------- CONFIGURATION AND SETUP --------
-
-# Check if OPENAI_API_KEY is in secrets
-if "API_KEY" in st.secrets:
-    client = OpenAI(api_key=st.secrets["API_KEY"])    
 
 
 
