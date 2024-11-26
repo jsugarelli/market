@@ -28,7 +28,7 @@ alpha_deadweight_loss = 0.6
 # ----------- FEATURES -----------
 
 use_gallery = True
-use_ai = True
+use_ai = False
 default_language = "de"
 
 
