@@ -196,11 +196,9 @@ def call_openrouter_api(user_input):
             model_name=ai_model,
             temperature=ai_temperature
         )
-        
-        print("Raw API response:", response_text)  # Debug print
+                
         return response_text
-    except Exception as e:
-        print(f"Error in API call: {str(e)}")  # Debug print
+    except Exception as e:        
         error_message = get_translation("API_ERROR_WARNING")
         st.warning(f"{error_message}: {str(e)}")
         return f"Error: {str(e)}"
@@ -429,22 +427,25 @@ if st.session_state["use_ai"]:
         
         user_input = st.text_area(get_translation("AI_INPUT_LABEL"), height=150)
         if st.button(get_translation("ANALYZE_BUTTON")):
-            with st.spinner(get_translation("ANALYZING_MESSAGE")):
-                api_response = call_openrouter_api(user_input)
-                result = parse_api_response(api_response)
-                st.session_state["ai_result"] = result
-                
-                if result["status"] == "error" and result.get("comment")=="":
-                    st.error(get_translation("AI_ERROR_MESSAGE") + result.get("message", ""))
-                elif result["status"] == "error" and result.get("comment")!="":
-                    st.error(get_translation("AI_ERROR_MESSAGE") + result.get("comment", ""))
-                else:
-                    st.success(get_translation("AI_SUCCESS_MESSAGE"))
-                    st.session_state["demand_shift"] = result["shift_demand"]
-                    st.session_state["supply_shift"] = result["shift_supply"]
-                    st.session_state["gov_intervention"] = result["gov_intervention"]
-                    st.session_state["shift"] = result["shift_demand"] != 0 or result["shift_supply"] != 0                    
-                    st.rerun()
+            if "user_api_key" in st.session_state or st.secrets.get("API_KEY"):
+                with st.spinner(get_translation("ANALYZING_MESSAGE")):
+                    api_response = call_openrouter_api(user_input)
+                    result = parse_api_response(api_response)
+                    st.session_state["ai_result"] = result
+                    
+                    if result["status"] == "error" and result.get("comment")=="":
+                        st.error(get_translation("AI_ERROR_MESSAGE") + result.get("message", ""))
+                    elif result["status"] == "error" and result.get("comment")!="":
+                        st.error(get_translation("AI_ERROR_MESSAGE") + result.get("comment", ""))
+                    else:
+                        st.success(get_translation("AI_SUCCESS_MESSAGE"))
+                        st.session_state["demand_shift"] = result["shift_demand"]
+                        st.session_state["supply_shift"] = result["shift_supply"]
+                        st.session_state["gov_intervention"] = result["gov_intervention"]
+                        st.session_state["shift"] = result["shift_demand"] != 0 or result["shift_supply"] != 0                    
+                        st.rerun()
+            else:
+                st.error(get_translation("API_KEY_ERROR_MESSAGE"))
 
 
 # Sidebar components
