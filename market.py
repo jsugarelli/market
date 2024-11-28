@@ -883,17 +883,18 @@ with st.sidebar.expander(get_translation("GRAPH_PARAMS_EXPANDER")):
     st.number_input(get_translation("TICKMARK_WIDTH_LABEL"), value=st.session_state["tickmark_width"], step=0.5, min_value=0.5, max_value=5.0, format="%.1f", key="tickmark_input", on_change=callback_params)
     st.number_input(get_translation("LINE_THICKNESS_LABEL"), value=st.session_state["line_thickness"], step=0.1, min_value=0.1, max_value=5.0, format="%.1f", key="line_thickness_input", on_change=callback_params)
 
-# Settings for OpenAI API
-with st.sidebar.expander(get_translation("API_SETTINGS_EXPANDER")):
-    user_api_key = st.text_input(
-        get_translation("API_KEY_INPUT"),
-        type="password",
-        help=get_translation("API_KEY_HELP")
-    )
-    if user_api_key:
-        st.session_state["user_api_key"] = user_api_key
-    elif "user_api_key" in st.session_state:
-        del st.session_state["user_api_key"]
+# Settings for OpenAI API - only show if use_ai is True
+if st.session_state["use_ai"]:
+    with st.sidebar.expander(get_translation("API_SETTINGS_EXPANDER")):
+        user_api_key = st.text_input(
+            get_translation("API_KEY_INPUT"),
+            type="password",
+            help=get_translation("API_KEY_HELP")
+        )
+        if user_api_key:
+            st.session_state["user_api_key"] = user_api_key
+        elif "user_api_key" in st.session_state:
+            del st.session_state["user_api_key"]
 
 # About page
 with st.sidebar.expander(get_translation("ABOUT_EXPANDER")):
