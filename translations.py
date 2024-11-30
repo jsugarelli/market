@@ -1,11 +1,17 @@
 language_flags = {
+    "zh": "🇨🇳 中文",
     "de": "🇩🇪 Deutsch",
     "en": "🇬🇧 English",
-    "es": "🇪🇸 Español",
     "fr": "🇫🇷 Français",
-    "it": "🇮🇹 Italiano",    
+    "es": "🇪🇸 Español",
+    "hi": "🇮🇳 हिंदी",
+    "it": "🇮🇹 Italiano",
+    "ja": "🇯🇵 日本語",
     "nl": "🇳🇱 Nederlands",
-    "pt": "🇵🇹 Português"
+    "pt": "🇵🇹 Português",
+    "ru": "🇷🇺 Русский",
+    "uk": "🇺🇦 Українська",
+
 }
 
 translations = {
@@ -21,7 +27,7 @@ translations = {
         "GOV_INTERVENTION_CHECKBOX": "Verschiebung ist durch Staatseingriff bedingt",
         "MAX_PRICE": "Höchstpreis",
         "MIN_PRICE": "Mindestpreis",
-        "PRICE_LIMITS_WARNING": "Höchstpreis muss größer als Mindestpreis sein",
+        "PRICE_LIMITS_WARNING": "Höchstpreis und Mindestpreis sein können nicht gleichzeitig gesetzt werden. Bitte einen der beiden auf 0 setzen.",
         "MIN_PRICE_WARNING": "Mindestpreis muss größer als Gleichgewichtspreis sein",
         "MAX_PRICE_WARNING": "Höchstpreis muss kleiner als Gleichgewichtspreis sein",
         "SCENARIOS_INSTRUCTIONS": "Analyse Szenario",
@@ -102,7 +108,9 @@ translations = {
         "CONSUMER_INCIDENCE": "Anteil der Konsumenten",
         "PRODUCER_INCIDENCE": "Anteil der Produzenten",
         "FEEDBACK_LABEL": "Feedback",
-        "LANGUAGE_SELECTOR_LABEL": "Sprache"
+        "LANGUAGE_SELECTOR_LABEL": "Sprache",
+        "POSITIVE_NUMBER_ERROR": "Bitte geben Sie eine positive Zahl ein",
+        "VALID_NUMBER_ERROR": "Bitte geben Sie eine gültige Zahl ein, 0, wenn Sie keinen Grenzwert setzen wollen"
     },
     "en": {
         "TITLE": "Perfect Competition Market",
@@ -116,7 +124,7 @@ translations = {
         "GOV_INTERVENTION_CHECKBOX": "Government Intervention",
         "MAX_PRICE": "Maximum Price",
         "MIN_PRICE": "Minimum Price",
-        "PRICE_LIMITS_WARNING": "Maximum price must be greater than minimum price",
+        "PRICE_LIMITS_WARNING": "Maximum price and minimum price cannot be set at the same time. Please set one of them to 0.",
         "MIN_PRICE_WARNING": "Minimum price must be greater than equilibrium price",
         "MAX_PRICE_WARNING": "Maximum price must be less than equilibrium price",
         "SCENARIOS_INSTRUCTIONS": "Scenario Instructions",
@@ -197,7 +205,9 @@ translations = {
         "CONSUMER_INCIDENCE": "Share of Consumers",
         "PRODUCER_INCIDENCE": "Share of Producers",
         "FEEDBACK_LABEL": "Feedback",
-        "LANGUAGE_SELECTOR_LABEL": "Language"
+        "LANGUAGE_SELECTOR_LABEL": "Language",
+        "POSITIVE_NUMBER_ERROR": "Please enter a positive number",
+        "VALID_NUMBER_ERROR": "Please enter a valid number (0 if you don't want to set a limit)"
     },
     "fr": {
         "TITLE": "Marché de concurrence parfaite",
@@ -211,7 +221,7 @@ translations = {
         "GOV_INTERVENTION_CHECKBOX": "Intervention gouvernementale",
         "MAX_PRICE": "Prix maximum",
         "MIN_PRICE": "Prix minimum",
-        "PRICE_LIMITS_WARNING": "Le prix maximum doit être supérieur au prix minimum",
+        "PRICE_LIMITS_WARNING": "Le prix maximum et le prix minimum ne peuvent être définis en même temps. Veuillez en définir un à 0.",
         "MIN_PRICE_WARNING": "Le prix minimum doit être supérieur au prix d'équilibre",
         "MAX_PRICE_WARNING": "Le prix maximum doit être inférieur au prix d'équilibre",
         "SCENARIOS_INSTRUCTIONS": "Instructions pour le scénario",
@@ -292,7 +302,9 @@ translations = {
         "CONSUMER_INCIDENCE": "Part des consommateurs",
         "PRODUCER_INCIDENCE": "Part des producteurs",
         "FEEDBACK_LABEL": "Retour",
-        "LANGUAGE_SELECTOR_LABEL": "Langue"
+        "LANGUAGE_SELECTOR_LABEL": "Langue",
+        "POSITIVE_NUMBER_ERROR": "Veuillez entrer un nombre positif",
+        "VALID_NUMBER_ERROR": "Veuillez entrer un nombre valide (0 si vous ne voulez pas définir de limite)"
     },
     "es": {
         "TITLE": "Mercado de competencia perfecta",
@@ -306,7 +318,7 @@ translations = {
         "GOV_INTERVENTION_CHECKBOX": "Intervención gubernamental",
         "MAX_PRICE": "Precio máximo",
         "MIN_PRICE": "Precio mínimo",
-        "PRICE_LIMITS_WARNING": "El precio máximo debe ser mayor que el precio mínimo",
+        "PRICE_LIMITS_WARNING": "El precio máximo y el precio mínimo no pueden ser definidos al mismo tiempo. Por favor, defina uno de ellos a 0.",
         "MIN_PRICE_WARNING": "El precio mínimo debe ser mayor que el precio de equilibrio",
         "MAX_PRICE_WARNING": "El precio máximo debe ser menor que el precio de equilibrio",
         "SCENARIOS_INSTRUCTIONS": "Instrucciones del escenario",
@@ -387,7 +399,9 @@ translations = {
         "CONSUMER_INCIDENCE": "Parte de los consumidores",
         "PRODUCER_INCIDENCE": "Parte de los productores",
         "FEEDBACK_LABEL": "Comentarios",
-        "LANGUAGE_SELECTOR_LABEL": "Idioma"
+        "LANGUAGE_SELECTOR_LABEL": "Idioma",
+        "POSITIVE_NUMBER_ERROR": "Por favor, ingrese un número positivo",
+        "VALID_NUMBER_ERROR": "Por favor, ingrese un número válido (0 si no desea definir un límite)"
     },
     "it": {
         "TITLE": "Mercato di concorrenza perfetta",
@@ -401,7 +415,7 @@ translations = {
         "GOV_INTERVENTION_CHECKBOX": "Intervento governativo",
         "MAX_PRICE": "Prezzo massimo",
         "MIN_PRICE": "Prezzo minimo",
-        "PRICE_LIMITS_WARNING": "Il prezzo massimo deve essere superiore al prezzo minimo",
+        "PRICE_LIMITS_WARNING": "Il prezzo massimo e il prezzo minimo non possono essere definiti contemporaneamente. Per favore, definire uno di essi a 0.",
         "MIN_PRICE_WARNING": "Il prezzo minimo deve essere superiore al prezzo di equilibrio",
         "MAX_PRICE_WARNING": "Il prezzo massimo deve essere inferiore al prezzo di equilibrio",
         "SCENARIOS_INSTRUCTIONS": "Istruzioni per lo scenario",
@@ -482,7 +496,9 @@ translations = {
         "CONSUMER_INCIDENCE": "Quota dei consumatori",
         "PRODUCER_INCIDENCE": "Quota dei produttori",
         "FEEDBACK_LABEL": "Feedback",
-        "LANGUAGE_SELECTOR_LABEL": "Lingua"
+        "LANGUAGE_SELECTOR_LABEL": "Lingua",
+        "POSITIVE_NUMBER_ERROR": "Per favore, inserisci un numero positivo",
+        "VALID_NUMBER_ERROR": "Per favore, inserisci un numero valido (0 se non desideri definire un limite)"
     },
     "pt": {
         "TITLE": "Mercado de concorrência perfeita",
@@ -496,7 +512,7 @@ translations = {
         "GOV_INTERVENTION_CHECKBOX": "Intervenção governamental",
         "MAX_PRICE": "Preço máximo",
         "MIN_PRICE": "Preço mínimo",
-        "PRICE_LIMITS_WARNING": "O preço máximo deve ser maior que o preço mínimo",
+        "PRICE_LIMITS_WARNING": "O preço máximo e o preço mínimo não podem ser definidos ao mesmo tempo. Por favor, defina um deles para 0.",
         "MIN_PRICE_WARNING": "O preço mínimo deve ser maior que o preço de equilíbrio",
         "MAX_PRICE_WARNING": "O preço máximo deve ser menor que o preço de equilíbrio",
         "SCENARIOS_INSTRUCTIONS": "Instruções do cenário",
@@ -577,7 +593,9 @@ translations = {
         "CONSUMER_INCIDENCE": "Parte dos consumidores",
         "PRODUCER_INCIDENCE": "Parte dos produtores",
         "FEEDBACK_LABEL": "Feedback",
-        "LANGUAGE_SELECTOR_LABEL": "Idioma"
+        "LANGUAGE_SELECTOR_LABEL": "Idioma",
+        "POSITIVE_NUMBER_ERROR": "Por favor, insira um número positivo",
+        "VALID_NUMBER_ERROR": "Por favor, insira um número válido (0 se não desejar definir um limite)"
     },
     "nl": {
         "TITLE": "Perfecte concurrentiemarkt",
@@ -591,7 +609,7 @@ translations = {
         "GOV_INTERVENTION_CHECKBOX": "Overheidsinterventie",
         "MAX_PRICE": "Maximale prijs",
         "MIN_PRICE": "Minimale prijs",
-        "PRICE_LIMITS_WARNING": "De maximale prijs moet hoger zijn dan de minimale prijs",
+        "PRICE_LIMITS_WARNING": "De maximale prijs en de minimale prijs kunnen niet tegelijkertijd worden ingesteld. Stel een van de twee in op 0.",
         "MIN_PRICE_WARNING": "De minimale prijs moet hoger zijn dan de evenwichtsprijs",
         "MAX_PRICE_WARNING": "De maximale prijs moet lager zijn dan de evenwichtsprijs",
         "SCENARIOS_INSTRUCTIONS": "Instructies voor scenario's",
@@ -670,8 +688,495 @@ translations = {
         "INCIDENCE_LABEL_TAX": "Belastingincidente",
         "INCIDENCE_LABEL_SUBSIDY": "Subsidie-incidente",
         "CONSUMER_INCIDENCE": "Deel van consumenten",
-        "PRODUCER_INCIDENCE": "Deel van producenten",
+        "PRODUCER_INCIDENCE": "Deel van producten",
         "FEEDBACK_LABEL": "Feedback",
-        "LANGUAGE_SELECTOR_LABEL": "Taal"
-    }   
+        "LANGUAGE_SELECTOR_LABEL": "Taal",
+        "POSITIVE_NUMBER_ERROR": "Voer een positief getal in",
+        "VALID_NUMBER_ERROR": "Voer een geldig getal in (0 als u geen limiet wilt definiëren)"
+    },
+    "ru": {
+        "TITLE": "Рынок совершенной конкуренции",
+        "INPUTS_SUBHEADER": "I. Входные данные",
+        "EXOGENOUS_VARIABLES_TAB": "Экзогенные переменные",
+        "PRICE_LIMITS_TAB": "Ценовые ограничения",
+        "SCENARIOS_TAB": "Сценарии",
+        "AI_TAB": "AI Анализ",
+        "SHIFT_DEMAND": "Изменить спрос",
+        "SHIFT_SUPPLY": "Изменить предложение",
+        "GOV_INTERVENTION_CHECKBOX": "Государственное вмешательство",
+        "MAX_PRICE": "Максимальная цена",
+        "MIN_PRICE": "Минимальная цена",
+        "PRICE_LIMITS_WARNING": "Максимальная и минимальная цена не могут быть установлены одновременно. Пожалуйста, установите одну из них в 0.",
+        "MIN_PRICE_WARNING": "Минимальная цена должна быть выше равновесной цены",
+        "MAX_PRICE_WARNING": "Максимальная цена должна быть ниже равновесной цены",
+        "SCENARIOS_INSTRUCTIONS": "Инструкции по сценарию",
+        "SCENARIOS_LABEL": "Выбор сценария",
+        "AI_INSTRUCTIONS": "Опишите рыночный сценарий с изменениями экзогенных переменных. ИИ проанализирует соответствующие сдвиги спроса и предложения, а также их влияние на благосостояние.",
+        "AI_INPUT_LABEL": "Описание сценария",
+        "ANALYZE_BUTTON": "Анализировать",
+        "ANALYZING_MESSAGE": "Анализ...",
+        "AI_ERROR_MESSAGE": "Ошибка при анализе:",
+        "API_ERROR_WARNING": "Ошибка при вызове API",
+        "AI_SUCCESS_MESSAGE": "Анализ завершен. График обновлен.",
+        "AI_COMMENT_LABEL": "Комментарий:",
+        "API_SETTINGS_EXPANDER": "Настройки API",
+        "API_KEY_INPUT": "Ключ API OpenRouter",
+        "API_KEY_HELP": "Введите ваш ключ API OpenRouter. Если оставить пустым, будет использован ключ по умолчанию, если он указан администратором.",
+        "API_KEY_ERROR_MESSAGE": "Ключ API OpenRouter недоступен. Запрос не может быть обработан.",
+        "DISPLAY_HEADER": "Отображение",
+        "SURPLUS_SUBHEADER": "Излишки домохозяйств и фирм",
+        "SURPLUS_RADIO_LABEL": "Выбор излишков",
+        "SURPLUS_NONE": "Нет",
+        "SURPLUS_ORIGINAL": "Исходные излишки",
+        "SURPLUS_SHIFTED": "Излишки после изменений",
+        "SURPLUS_BOTH": "Оба излишка",
+        "GOV_SURPLUS_SUBHEADER": "Государственные излишки",
+        "SHOW_GOV_CHECKBOX": "Показать государственные излишки",
+        "GOV_INTERVENTION_WARNING": "Государственные расходы, доходы и потери благосостояния появляются только при государственном вмешательстве.",
+        "DEADWEIGHT_LOSS_SUBHEADER": "Чистые потери",
+        "SHOW_DEADWEIGHT_LOSS_CHECKBOX": "Показать чистые потери",
+        "QUANT_RESULTS_SUBHEADER": "III. Количественные результаты",
+        "QUANTITATIVE_RESULTS_SUBHEADER": "Количественные результаты",
+        "SHOW_QUANT_RESULTS_CHECKBOX": "Показать количественные результаты",
+        "GRAPHICAL_ANALYSIS_SUBHEADER": "II. Графический анализ",
+        "DEMAND_LABEL": "Спрос",
+        "SUPPLY_LABEL": "Предложение",
+        "DEMAND_SHIFTED_LABEL": "Измененный спрос",
+        "SUPPLY_SHIFTED_LABEL": "Измененное предложение",
+        "CONSUMER_SURPLUS_LABEL": "Излишек потребителя",
+        "PRODUCER_SURPLUS_LABEL": "Излишек производителя",
+        "CONSUMER_SURPLUS_SHIFTED_LABEL": "Излишек потребителя (измененный)",
+        "PRODUCER_SURPLUS_SHIFTED_LABEL": "Излишек производителя (измененный)",
+        "DEADWEIGHT_LOSS_LABEL": "Чистые потери",
+        "GOV_INCOME_LABEL": "Налоговые поступления",
+        "GOV_EXPENSES_LABEL": "Государственные расходы",
+        "QUANTITY_LABEL": "Количество",
+        "PRICE_LABEL": "Цена",
+        "PRICES_LABEL": "Цены",
+        "EQUILIBRIUM_PRICE_ORIGINAL_LABEL": "Исходная равновесная цена:",
+        "EQUILIBRIUM_PRICE_SHIFTED_LABEL": "Измененная равновесная цена:",
+        "QUANTITIES_LABEL": "Количества",
+        "EQUILIBRIUM_QUANTITY_ORIGINAL_LABEL": "Исходное равновесное количество:",
+        "EQUILIBRIUM_QUANTITY_SHIFTED_LABEL": "Измененное равновесное количество:",
+        "CONSUMER_SURPLUS_ORIGINAL_LABEL": "Исходный излишек потребителя:",
+        "PRODUCER_SURPLUS_ORIGINAL_LABEL": "Исходный излишек производителя:",
+        "TOTAL_WELFARE_LABEL": "Общее благосостояние:",
+        "TOTAL_WELFARE_ORIGINAL_LABEL": "Исходное общее благосостояние:",
+        "TOTAL_WELFARE_SHIFTED_LABEL": "Общее благосостояние после изменений:",
+        "SETTINGS_HEADER": "Настройки",
+        "CURVE_PARAMS_EXPANDER": "Параметры кривых",
+        "DEMAND_SLOPE_LABEL": "Наклон (спрос)",
+        "DEMAND_INTERCEPT_LABEL": "Пересечение (спрос)",
+        "SUPPLY_SLOPE_LABEL": "Наклон (предложение)",
+        "SUPPLY_INTERCEPT_LABEL": "Пересечение (предложение)",
+        "RESET_BUTTON": "Сброс",
+        "GRAPH_PARAMS_EXPANDER": "Параметры графика",
+        "FIX_AXES_CHECKBOX": "Зафиксировать оси",
+        "SHOW_GRID_CHECKBOX": "Показать сетку",
+        "TICKMARK_WIDTH_LABEL": "Ширина делений",
+        "LINE_THICKNESS_LABEL": "Толщина линий",
+        "ABOUT_EXPANDER": "О программе",
+        "VERSION_LABEL": "Версия: 0.3",
+        "CONFIRM_CHECKBOX": "Я подтверждаю",
+        "EXAMPLE_SCENARIO_LABEL": "Пример сценария:",
+        "EXAMPLE_SCENARIO_TEXT": "Зарплаты рабочих на рынке электромобилей растут",
+        "ELASTICITY_LABEL_DEMAND": "Эластичность спроса",
+        "ELASTICITY_LABEL_SUPPLY": "Эластичность предложения",
+        "INCIDENCE_LABEL_TAX": "Распределение налога",
+        "INCIDENCE_LABEL_SUBSIDY": "Распределение субсидии",
+        "CONSUMER_INCIDENCE": "Доля потребителей",
+        "PRODUCER_INCIDENCE": "Доля производителей",
+        "FEEDBACK_LABEL": "Обратная связь",
+        "LANGUAGE_SELECTOR_LABEL": "Язык",
+        "POSITIVE_NUMBER_ERROR": "Пожалуйста, введите положительное число",
+        "VALID_NUMBER_ERROR": "Пожалуйста, введите корректное число (0, если не хотите устанавливать лимит)"
+    },
+    "hi": {
+        "TITLE": "पूर्ण प्रतिस्पर्धा बाज़ार",
+        "INPUTS_SUBHEADER": "I. इनपुट",
+        "EXOGENOUS_VARIABLES_TAB": "बाहरी चर",
+        "PRICE_LIMITS_TAB": "मूल्य सीमाएं",
+        "SCENARIOS_TAB": "परिदृश्य",
+        "AI_TAB": "AI विश्लेषण",
+        "SHIFT_DEMAND": "मांग में परिवर्तन",
+        "SHIFT_SUPPLY": "आपूर्ति में परिवर्तन",
+        "GOV_INTERVENTION_CHECKBOX": "सरकारी हस्तक्षेप",
+        "MAX_PRICE": "अधिकतम मूल्य",
+        "MIN_PRICE": "न्यूनतम मूल्य",
+        "PRICE_LIMITS_WARNING": "अधिकतम और न्यूनतम मूल्य एक साथ नहीं सेट किए जा सकते। कृपया एक को 0 पर सेट करें।",
+        "MIN_PRICE_WARNING": "न्यूनतम मूल्य संतुलन मूल्य से अधिक होना चाहिए",
+        "MAX_PRICE_WARNING": "अधिकतम मूल्य संतुलन मूल्य से कम होना चाहिए",
+        "SCENARIOS_INSTRUCTIONS": "परिदृश्य निर्देश",
+        "SCENARIOS_LABEL": "परिदृश्य चयन",
+        "AI_INSTRUCTIONS": "बाहरी चरों में परिवर्तन के साथ एक बाज़ार परिदृश्य का वर्णन करें। AI मांग और आपूर्ति में संबंधित बदलाव और कल्याण प्रभावों का विश्लेषण करेगा।",
+        "AI_INPUT_LABEL": "परिदृश्य विवरण",
+        "ANALYZE_BUTTON": "विश्लेषण करें",
+        "ANALYZING_MESSAGE": "विश्लेषण जारी...",
+        "AI_ERROR_MESSAGE": "विश्लेषण में त्रुटि:",
+        "API_ERROR_WARNING": "API कॉल में त्रुटि",
+        "AI_SUCCESS_MESSAGE": "विश्लेषण पूर्ण। ग्राफ अपडेट किया गया है।",
+        "AI_COMMENT_LABEL": "टिप्पणी:",
+        "API_SETTINGS_EXPANDER": "API सेटिंग्स",
+        "API_KEY_INPUT": "OpenRouter API कुंजी",
+        "API_KEY_HELP": "अपनी OpenRouter API कुंजी दर्ज करें। खाली छोड़ने पर, डिफ़ॉल्ट कुंजी का उपयोग किया जाएगा यदि व्यवस्थापक ने निर्दिष्ट किया है।",
+        "API_KEY_ERROR_MESSAGE": "कोई OpenRouter API कुंजी उपलब्ध नहीं है। अनुरोध प्रोसेस नहीं किया जा सकता।",
+        "DISPLAY_HEADER": "प्रदर्शन",
+        "SURPLUS_SUBHEADER": "आदम और फर्मों का अधिशेष",
+        "SURPLUS_RADIO_LABEL": "अधिशेष चयन",
+        "SURPLUS_NONE": "कोई नहीं",
+        "SURPLUS_ORIGINAL": "मूल अधिशेष",
+        "SURPLUS_SHIFTED": "अधिशेष बाद बदलाव",
+        "SURPLUS_BOTH": "दोनों अधिशेष",
+        "GOV_SURPLUS_SUBHEADER": "सरकारी अधिशेष",
+        "SHOW_GOV_CHECKBOX": "सरकारी अधिशेष दिखाएं",
+        "GOV_INTERVENTION_WARNING": "सरकारी व्यय, आय और कल्याण हानि केवल तभी दिखाई देते हैं जब मांग या आपूर्ति में बदलाव सरकारी हस्तक्षेप के कारण हो।",
+        "DEADWEIGHT_LOSS_SUBHEADER": "मृत भार हानि",
+        "SHOW_DEADWEIGHT_LOSS_CHECKBOX": "मृत भार हानि दिखाएं",
+        "QUANT_RESULTS_SUBHEADER": "III. मात्रात्मक परिणाम",
+        "QUANTITATIVE_RESULTS_SUBHEADER": "मात्रात्मक परिणाम",
+        "SHOW_QUANT_RESULTS_CHECKBOX": "मात्रात्मक परिणाम दिखाएं",
+        "GRAPHICAL_ANALYSIS_SUBHEADER": "II. ग्राफिक विश्लेषण",
+        "DEMAND_LABEL": "मांग",
+        "SUPPLY_LABEL": "आपूर्ति",
+        "DEMAND_SHIFTED_LABEL": "मांग बदलाई",
+        "SUPPLY_SHIFTED_LABEL": "आपूर्ति बदलाई",
+        "CONSUMER_SURPLUS_LABEL": "उपभोक्ता अधिशेष",
+        "PRODUCER_SURPLUS_LABEL": "उत्पादक अधिशेष",
+        "CONSUMER_SURPLUS_SHIFTED_LABEL": "उपभोक्ता अधिशेष (बदलाई)",
+        "PRODUCER_SURPLUS_SHIFTED_LABEL": "उत्पादक अधिशेष (बदलाई)",
+        "DEADWEIGHT_LOSS_LABEL": "मृत भार हानि",
+        "GOV_INCOME_LABEL": "कर राजस्व",
+        "GOV_EXPENSES_LABEL": "सरकारी व्यय",
+        "QUANTITY_LABEL": "मात्रा",
+        "PRICE_LABEL": "मूल्य",
+        "PRICES_LABEL": "मूल्य",
+        "EQUILIBRIUM_PRICE_ORIGINAL_LABEL": "मूल संतुलन मूल्य:",
+        "EQUILIBRIUM_PRICE_SHIFTED_LABEL": "मूल्य बदलाई संतुलन:",
+        "QUANTITIES_LABEL": "मात्राएं",
+        "EQUILIBRIUM_QUANTITY_ORIGINAL_LABEL": "मूल संतुलन मात्रा:",
+        "EQUILIBRIUM_QUANTITY_SHIFTED_LABEL": "मूल्य बदलाई संतुलन मात्रा:",
+        "CONSUMER_SURPLUS_ORIGINAL_LABEL": "मूल उपभोक्ता अधिशेष:",
+        "PRODUCER_SURPLUS_ORIGINAL_LABEL": "मूल उत्पादक अधिशेष:",
+        "TOTAL_WELFARE_LABEL": "कुल कल्याण:",
+        "TOTAL_WELFARE_ORIGINAL_LABEL": "मूल कुल कल्याण:",
+        "TOTAL_WELFARE_SHIFTED_LABEL": "कुल कल्याण बदलाई:",
+        "SETTINGS_HEADER": "सेटिंग्स",
+        "CURVE_PARAMS_EXPANDER": "पैरामीटर",
+        "DEMAND_SLOPE_LABEL": "ढलान (मांग)",
+        "DEMAND_INTERCEPT_LABEL": "प्रतिच्छेदन (मांग)",
+        "SUPPLY_SLOPE_LABEL": "ढलान (आपूर्ति)",
+        "SUPPLY_INTERCEPT_LABEL": "प्रतिच्छेदन (आपूर्ति)",
+        "RESET_BUTTON": "रीसेट",
+        "GRAPH_PARAMS_EXPANDER": "ग्राफ पैरामीटर",
+        "FIX_AXES_CHECKBOX": "अक्ष स्थिर करें",
+        "SHOW_GRID_CHECKBOX": "ग्रिड दिखाएं",
+        "TICKMARK_WIDTH_LABEL": "टिक मार्क चौड़ाई",
+        "LINE_THICKNESS_LABEL": "रेखा मोटाई",
+        "ABOUT_EXPANDER": "जानकारी",
+        "VERSION_LABEL": "संस्करण: 0.3",
+        "CONFIRM_CHECKBOX": "मैं पुष्टि करता हूं",
+        "EXAMPLE_SCENARIO_LABEL": "उदाहरण परिदृश्य:",
+        "EXAMPLE_SCENARIO_TEXT": "इलेक्ट्रिक कार बाजार में कार श्रमिकों के वेतन बढ़ रहे हैं",
+        "ELASTICITY_LABEL_DEMAND": "मांग की लोच",
+        "ELASTICITY_LABEL_SUPPLY": "आपूर्ति की लोच",
+        "INCIDENCE_LABEL_TAX": "कर का भार",
+        "INCIDENCE_LABEL_SUBSIDY": "सब्सिडी का भार",
+        "CONSUMER_INCIDENCE": "उपभोक्ताओं का हिस्सा",
+        "PRODUCER_INCIDENCE": "उत्पादकों का हिस्सा",
+        "FEEDBACK_LABEL": "प्रतिक्रिया",
+        "LANGUAGE_SELECTOR_LABEL": "भाषा",
+        "POSITIVE_NUMBER_ERROR": "कृपया एक धनात्मक संख्या दर्ज करें",
+        "VALID_NUMBER_ERROR": "कृपया एक वैध संख्या दर्ज करें (यदि सीमा नहीं सेट करना चाहते हैं तो 0)"
+    },
+        "zh": {
+        "TITLE": "完全竞争市场",
+        "INPUTS_SUBHEADER": "I. 输入",
+        "EXOGENOUS_VARIABLES_TAB": "外生变量",
+        "PRICE_LIMITS_TAB": "价格限制",
+        "SCENARIOS_TAB": "场景",
+        "AI_TAB": "AI 分析",
+        "SHIFT_DEMAND": "改变需求",
+        "SHIFT_SUPPLY": "改变供给",
+        "GOV_INTERVENTION_CHECKBOX": "政府干预",
+        "MAX_PRICE": "最高价格",
+        "MIN_PRICE": "最低价格",
+        "PRICE_LIMITS_WARNING": "最高价格和最低价格不能同时设置。请将其中一个设为0。",
+        "MIN_PRICE_WARNING": "最低价格必须高于均衡价格",
+        "MAX_PRICE_WARNING": "最高价格必须低于均衡价格",
+        "SCENARIOS_INSTRUCTIONS": "场景说明",
+        "SCENARIOS_LABEL": "场景选择",
+        "AI_INSTRUCTIONS": "描述一个外生变量发生变化的市场场景。AI将分析相应的供需曲线变化及其对福利的影响。",
+        "AI_INPUT_LABEL": "场景描述",
+        "ANALYZE_BUTTON": "分析",
+        "ANALYZING_MESSAGE": "分析中...",
+        "AI_ERROR_MESSAGE": "分析过程中出错：",
+        "API_ERROR_WARNING": "API调用错误",
+        "AI_SUCCESS_MESSAGE": "分析完成。图表已更新。",
+        "AI_COMMENT_LABEL": "评论：",
+        "API_SETTINGS_EXPANDER": "API设置",
+        "API_KEY_INPUT": "OpenRouter API密钥",
+        "API_KEY_HELP": "输入您的OpenRouter API密钥。如果留空，将使用管理员设置的默认密钥（如果有）。",
+        "API_KEY_ERROR_MESSAGE": "没有可用的OpenRouter API密钥。无法处理请求。",
+        "DISPLAY_HEADER": "显示",
+        "SURPLUS_SUBHEADER": "消费者和生产者剩余",
+        "SURPLUS_RADIO_LABEL": "剩余选择",
+        "SURPLUS_NONE": "无",
+        "SURPLUS_ORIGINAL": "原始剩余",
+        "SURPLUS_SHIFTED": "变化后剩余",
+        "SURPLUS_BOTH": "两者都显示",
+        "GOV_SURPLUS_SUBHEADER": "政府剩余",
+        "SHOW_GOV_CHECKBOX": "显示政府剩余",
+        "GOV_INTERVENTION_WARNING": "政府支出、收入和福利损失仅在政府干预时显示。",
+        "DEADWEIGHT_LOSS_SUBHEADER": "无谓损失",
+        "SHOW_DEADWEIGHT_LOSS_CHECKBOX": "显示无谓损失",
+        "QUANT_RESULTS_SUBHEADER": "III. 定量结果",
+        "QUANTITATIVE_RESULTS_SUBHEADER": "定量结果",
+        "SHOW_QUANT_RESULTS_CHECKBOX": "显示定量结果",
+        "GRAPHICAL_ANALYSIS_SUBHEADER": "II. 图形分析",
+        "DEMAND_LABEL": "需求",
+        "SUPPLY_LABEL": "供给",
+        "DEMAND_SHIFTED_LABEL": "变化后的需求",
+        "SUPPLY_SHIFTED_LABEL": "变化后的供给",
+        "CONSUMER_SURPLUS_LABEL": "消费者剩余",
+        "PRODUCER_SURPLUS_LABEL": "生产者剩余",
+        "CONSUMER_SURPLUS_SHIFTED_LABEL": "消费者剩余（变化后）",
+        "PRODUCER_SURPLUS_SHIFTED_LABEL": "生产者剩余（变化后）",
+        "DEADWEIGHT_LOSS_LABEL": "无谓损失",
+        "GOV_INCOME_LABEL": "税收收入",
+        "GOV_EXPENSES_LABEL": "政府支出",
+        "QUANTITY_LABEL": "数量",
+        "PRICE_LABEL": "价格",
+        "PRICES_LABEL": "价格",
+        "EQUILIBRIUM_PRICE_ORIGINAL_LABEL": "原始均衡价格：",
+        "EQUILIBRIUM_PRICE_SHIFTED_LABEL": "变化后均衡价格：",
+        "QUANTITIES_LABEL": "数量",
+        "EQUILIBRIUM_QUANTITY_ORIGINAL_LABEL": "原始均衡数量：",
+        "EQUILIBRIUM_QUANTITY_SHIFTED_LABEL": "变化后均衡数量：",
+        "CONSUMER_SURPLUS_ORIGINAL_LABEL": "原始消费者剩余：",
+        "PRODUCER_SURPLUS_ORIGINAL_LABEL": "原始生产者剩余：",
+        "TOTAL_WELFARE_LABEL": "总福利：",
+        "TOTAL_WELFARE_ORIGINAL_LABEL": "原始总福利：",
+        "TOTAL_WELFARE_SHIFTED_LABEL": "变化后总福利：",
+        "SETTINGS_HEADER": "设置",
+        "CURVE_PARAMS_EXPANDER": "曲线参数",
+        "DEMAND_SLOPE_LABEL": "斜率（需求）",
+        "DEMAND_INTERCEPT_LABEL": "截距（需求）",
+        "SUPPLY_SLOPE_LABEL": "斜率（供给）",
+        "SUPPLY_INTERCEPT_LABEL": "截距（供给）",
+        "RESET_BUTTON": "重置",
+        "GRAPH_PARAMS_EXPANDER": "图表参数",
+        "FIX_AXES_CHECKBOX": "固定坐标轴",
+        "SHOW_GRID_CHECKBOX": "显示网格",
+        "TICKMARK_WIDTH_LABEL": "刻度宽度",
+        "LINE_THICKNESS_LABEL": "线条粗细",
+        "ABOUT_EXPANDER": "关于",
+        "VERSION_LABEL": "版本：0.3",
+        "CONFIRM_CHECKBOX": "我确认",
+        "EXAMPLE_SCENARIO_LABEL": "场景示例：",
+        "EXAMPLE_SCENARIO_TEXT": "电动汽车市场的工人工资上涨",
+        "ELASTICITY_LABEL_DEMAND": "需求弹性",
+        "ELASTICITY_LABEL_SUPPLY": "供给弹性",
+        "INCIDENCE_LABEL_TAX": "税收归宿",
+        "INCIDENCE_LABEL_SUBSIDY": "补贴归宿",
+        "CONSUMER_INCIDENCE": "消费者份额",
+        "PRODUCER_INCIDENCE": "生产者份额",
+        "FEEDBACK_LABEL": "反馈",
+        "LANGUAGE_SELECTOR_LABEL": "语言",
+        "POSITIVE_NUMBER_ERROR": "请输入正数",
+        "VALID_NUMBER_ERROR": "请输入有效数字（如果不想设置限制，请输入0）"
+    },
+    "uk": {
+        "TITLE": "Ринок досконалої конкуренції",
+        "INPUTS_SUBHEADER": "I. Вхідні дані",
+        "EXOGENOUS_VARIABLES_TAB": "Екзогенні змінні",
+        "PRICE_LIMITS_TAB": "Цінові обмеження",
+        "SCENARIOS_TAB": "Сценарії",
+        "AI_TAB": "AI Аналіз",
+        "SHIFT_DEMAND": "Змінити попит",
+        "SHIFT_SUPPLY": "Змінити пропозицію",
+        "GOV_INTERVENTION_CHECKBOX": "Державне втручання",
+        "MAX_PRICE": "Максимальна ціна",
+        "MIN_PRICE": "Мінімальна ціна",
+        "PRICE_LIMITS_WARNING": "Максимальна та мінімальна ціна не можуть бути встановлені одночасно. Будь ласка, встановіть одну з них у 0.",
+        "MIN_PRICE_WARNING": "Мінімальна ціна повинна бути вищою за рівноважну ціну",
+        "MAX_PRICE_WARNING": "Максимальна ціна повинна бути нижчою за рівноважну ціну",
+        "SCENARIOS_INSTRUCTIONS": "Інструкції до сценарію",
+        "SCENARIOS_LABEL": "Вибір сценарію",
+        "AI_INSTRUCTIONS": "Опишіть ринковий сценарій зі змінами екзогенних змінних. ШІ проаналізує відповідні зміни попиту та пропозиції, а також їх вплив на добробут.",
+        "AI_INPUT_LABEL": "Опис сценарію",
+        "ANALYZE_BUTTON": "Аналізувати",
+        "ANALYZING_MESSAGE": "Аналіз...",
+        "AI_ERROR_MESSAGE": "Помилка під час аналізу:",
+        "API_ERROR_WARNING": "Помилка при виклику API",
+        "AI_SUCCESS_MESSAGE": "Аналіз завершено. Графік оновлено.",
+        "AI_COMMENT_LABEL": "Коментар:",
+        "API_SETTINGS_EXPANDER": "Налаштування API",
+        "API_KEY_INPUT": "Ключ API OpenRouter",
+        "API_KEY_HELP": "Введіть ваш ключ API OpenRouter. Якщо залишити порожнім, буде використано ключ за замовчуванням, якщо він вказаний адміністратором.",
+        "API_KEY_ERROR_MESSAGE": "Ключ API OpenRouter недоступний. Запит не може бути оброблений.",
+        "DISPLAY_HEADER": "Відображення",
+        "SURPLUS_SUBHEADER": "Надлишки домогосподарств та фірм",
+        "SURPLUS_RADIO_LABEL": "Вибір надлишків",
+        "SURPLUS_NONE": "Немає",
+        "SURPLUS_ORIGINAL": "Початкові надлишки",
+        "SURPLUS_SHIFTED": "Надлишки після змін",
+        "SURPLUS_BOTH": "Обидва надлишки",
+        "GOV_SURPLUS_SUBHEADER": "Державні надлишки",
+        "SHOW_GOV_CHECKBOX": "Показати державні надлишки",
+        "GOV_INTERVENTION_WARNING": "Державні витрати, доходи та втрати добробуту з'являються лише при державному втручанні.",
+        "DEADWEIGHT_LOSS_SUBHEADER": "Чисті втрати",
+        "SHOW_DEADWEIGHT_LOSS_CHECKBOX": "Показати чисті втрати",
+        "QUANT_RESULTS_SUBHEADER": "III. Кількісні результати",
+        "QUANTITATIVE_RESULTS_SUBHEADER": "Кількісні результати",
+        "SHOW_QUANT_RESULTS_CHECKBOX": "Показати кількісні результати",
+        "GRAPHICAL_ANALYSIS_SUBHEADER": "II. Графічний аналіз",
+        "DEMAND_LABEL": "Попит",
+        "SUPPLY_LABEL": "Пропозиція",
+        "DEMAND_SHIFTED_LABEL": "Змінений попит",
+        "SUPPLY_SHIFTED_LABEL": "Змінена пропозиція",
+        "CONSUMER_SURPLUS_LABEL": "Надлишок споживача",
+        "PRODUCER_SURPLUS_LABEL": "Надлишок виробника",
+        "CONSUMER_SURPLUS_SHIFTED_LABEL": "Надлишок споживача (змінений)",
+        "PRODUCER_SURPLUS_SHIFTED_LABEL": "Надлишок виробника (змінений)",
+        "DEADWEIGHT_LOSS_LABEL": "Чисті втрати",
+        "GOV_INCOME_LABEL": "Податкові надходження",
+        "GOV_EXPENSES_LABEL": "Державні витрати",
+        "QUANTITY_LABEL": "Кількість",
+        "PRICE_LABEL": "Ціна",
+        "PRICES_LABEL": "Ціни",
+        "EQUILIBRIUM_PRICE_ORIGINAL_LABEL": "Початкова рівноважна ціна:",
+        "EQUILIBRIUM_PRICE_SHIFTED_LABEL": "Змінена рівноважна ціна:",
+        "QUANTITIES_LABEL": "Кількості",
+        "EQUILIBRIUM_QUANTITY_ORIGINAL_LABEL": "Початкова рівноважна кількість:",
+        "EQUILIBRIUM_QUANTITY_SHIFTED_LABEL": "Змінена рівноважна кількість:",
+        "CONSUMER_SURPLUS_ORIGINAL_LABEL": "Початковий надлишок споживача:",
+        "PRODUCER_SURPLUS_ORIGINAL_LABEL": "Початковий надлишок виробника:",
+        "TOTAL_WELFARE_LABEL": "Загальний добробут:",
+        "TOTAL_WELFARE_ORIGINAL_LABEL": "Початковий загальний добробут:",
+        "TOTAL_WELFARE_SHIFTED_LABEL": "Загальний добробут після змін:",
+        "SETTINGS_HEADER": "Налаштування",
+        "CURVE_PARAMS_EXPANDER": "Параметри кривих",
+        "DEMAND_SLOPE_LABEL": "Нахил (попит)",
+        "DEMAND_INTERCEPT_LABEL": "Перетин (попит)",
+        "SUPPLY_SLOPE_LABEL": "Нахил (пропозиція)",
+        "SUPPLY_INTERCEPT_LABEL": "Перетин (пропозиція)",
+        "RESET_BUTTON": "Скинути",
+        "GRAPH_PARAMS_EXPANDER": "Параметри графіка",
+        "FIX_AXES_CHECKBOX": "Зафіксувати осі",
+        "SHOW_GRID_CHECKBOX": "Показати сітку",
+        "TICKMARK_WIDTH_LABEL": "Ширина поділок",
+        "LINE_THICKNESS_LABEL": "Товщина ліній",
+        "ABOUT_EXPANDER": "Про програму",
+        "VERSION_LABEL": "Версія: 0.3",
+        "CONFIRM_CHECKBOX": "Я підтверджую",
+        "EXAMPLE_SCENARIO_LABEL": "Приклад сценарію:",
+        "EXAMPLE_SCENARIO_TEXT": "Зарплати робітників на ринку електромобілів зростають",
+        "ELASTICITY_LABEL_DEMAND": "Еластичність попиту",
+        "ELASTICITY_LABEL_SUPPLY": "Еластичність пропозиції",
+        "INCIDENCE_LABEL_TAX": "Розподіл податку",
+        "INCIDENCE_LABEL_SUBSIDY": "Розподіл субсидії",
+        "CONSUMER_INCIDENCE": "Частка споживачів",
+        "PRODUCER_INCIDENCE": "Частка виробників",
+        "FEEDBACK_LABEL": "Зворотній зв'язок",
+        "LANGUAGE_SELECTOR_LABEL": "Мова",
+        "POSITIVE_NUMBER_ERROR": "Будь ласка, введіть додатне число",
+        "VALID_NUMBER_ERROR": "Будь ласка, введіть коректне число (0, якщо не хочете встановлювати ліміт)"
+    },    
+    "ja": {
+        "TITLE": "完全競争市場",
+        "INPUTS_SUBHEADER": "I. 入力",
+        "EXOGENOUS_VARIABLES_TAB": "外生変数",
+        "PRICE_LIMITS_TAB": "価格制限",
+        "SCENARIOS_TAB": "シナリオ",
+        "AI_TAB": "AI分析",
+        "SHIFT_DEMAND": "需要の変更",
+        "SHIFT_SUPPLY": "供給の変更",
+        "GOV_INTERVENTION_CHECKBOX": "政府介入",
+        "MAX_PRICE": "最高価格",
+        "MIN_PRICE": "最低価格",
+        "PRICE_LIMITS_WARNING": "最高価格と最低価格は同時に設定できません。どちらかを0に設定してください。",
+        "MIN_PRICE_WARNING": "最低価格は均衡価格より高く設定する必要があります",
+        "MAX_PRICE_WARNING": "最高価格は均衡価格より低く設定する必要があります",
+        "SCENARIOS_INSTRUCTIONS": "シナリオの説明",
+        "SCENARIOS_LABEL": "シナリオの選択",
+        "AI_INSTRUCTIONS": "外生変数の変化を含む市場シナリオを説明してください。AIが需要と供給の曲線の変化、および厚生への影響を分析します。",
+        "AI_INPUT_LABEL": "シナリオの説明",
+        "ANALYZE_BUTTON": "分析",
+        "ANALYZING_MESSAGE": "分析中...",
+        "AI_ERROR_MESSAGE": "分析中にエラーが発生しました：",
+        "API_ERROR_WARNING": "APIコールエラー",
+        "AI_SUCCESS_MESSAGE": "分析が完了しました。グラフが更新されました。",
+        "AI_COMMENT_LABEL": "コメント：",
+        "API_SETTINGS_EXPANDER": "API設定",
+        "API_KEY_INPUT": "OpenRouter APIキー",
+        "API_KEY_HELP": "OpenRouter APIキーを入力してください。空欄の場合、管理者が設定したデフォルトキーが使用されます（設定されている場合）。",
+        "API_KEY_ERROR_MESSAGE": "OpenRouter APIキーが利用できません。リクエストを処理できません。",
+        "DISPLAY_HEADER": "表示",
+        "SURPLUS_SUBHEADER": "消費者余剰と生産者余剰",
+        "SURPLUS_RADIO_LABEL": "余剰の選択",
+        "SURPLUS_NONE": "なし",
+        "SURPLUS_ORIGINAL": "元の余剰",
+        "SURPLUS_SHIFTED": "変更後の余剰",
+        "SURPLUS_BOTH": "両方の余剰",
+        "GOV_SURPLUS_SUBHEADER": "政府余剰",
+        "SHOW_GOV_CHECKBOX": "政府余剰を表示",
+        "GOV_INTERVENTION_WARNING": "政府支出、収入、厚生損失は政府介入がある場合のみ表示されます。",
+        "DEADWEIGHT_LOSS_SUBHEADER": "死荷重",
+        "SHOW_DEADWEIGHT_LOSS_CHECKBOX": "死荷重を表示",
+        "QUANT_RESULTS_SUBHEADER": "III. 定量的結果",
+        "QUANTITATIVE_RESULTS_SUBHEADER": "定量的結果",
+        "SHOW_QUANT_RESULTS_CHECKBOX": "定量的結果を表示",
+        "GRAPHICAL_ANALYSIS_SUBHEADER": "II. グラフ分析",
+        "DEMAND_LABEL": "需要",
+        "SUPPLY_LABEL": "供給",
+        "DEMAND_SHIFTED_LABEL": "変更後の需要",
+        "SUPPLY_SHIFTED_LABEL": "変更後の供給",
+        "CONSUMER_SURPLUS_LABEL": "消費者余剰",
+        "PRODUCER_SURPLUS_LABEL": "生産者余剰",
+        "CONSUMER_SURPLUS_SHIFTED_LABEL": "消費者余剰（変更後）",
+        "PRODUCER_SURPLUS_SHIFTED_LABEL": "生産者余剰（変更後）",
+        "DEADWEIGHT_LOSS_LABEL": "死荷重",
+        "GOV_INCOME_LABEL": "税収",
+        "GOV_EXPENSES_LABEL": "政府支出",
+        "QUANTITY_LABEL": "数量",
+        "PRICE_LABEL": "価格",
+        "PRICES_LABEL": "価格",
+        "EQUILIBRIUM_PRICE_ORIGINAL_LABEL": "元の均衡価格：",
+        "EQUILIBRIUM_PRICE_SHIFTED_LABEL": "変更後の均衡価格：",
+        "QUANTITIES_LABEL": "数量",
+        "EQUILIBRIUM_QUANTITY_ORIGINAL_LABEL": "元の均衡数量：",
+        "EQUILIBRIUM_QUANTITY_SHIFTED_LABEL": "変更後の均衡数量：",
+        "CONSUMER_SURPLUS_ORIGINAL_LABEL": "元の消費者余剰：",
+        "PRODUCER_SURPLUS_ORIGINAL_LABEL": "元の生産者余剰：",
+        "TOTAL_WELFARE_LABEL": "総厚生：",
+        "TOTAL_WELFARE_ORIGINAL_LABEL": "元の総厚生：",
+        "TOTAL_WELFARE_SHIFTED_LABEL": "変更後の総厚生：",
+        "SETTINGS_HEADER": "設定",
+        "CURVE_PARAMS_EXPANDER": "曲線パラメータ",
+        "DEMAND_SLOPE_LABEL": "傾き（需要）",
+        "DEMAND_INTERCEPT_LABEL": "切片（需要）",
+        "SUPPLY_SLOPE_LABEL": "傾き（供給）",
+        "SUPPLY_INTERCEPT_LABEL": "切片（供給）",
+        "RESET_BUTTON": "リセット",
+        "GRAPH_PARAMS_EXPANDER": "グラフパラメータ",
+        "FIX_AXES_CHECKBOX": "軸を固定",
+        "SHOW_GRID_CHECKBOX": "グリッドを表示",
+        "TICKMARK_WIDTH_LABEL": "目盛りの幅",
+        "LINE_THICKNESS_LABEL": "線の太さ",
+        "ABOUT_EXPANDER": "概要",
+        "VERSION_LABEL": "バージョン：0.3",
+        "CONFIRM_CHECKBOX": "確認しました",
+        "EXAMPLE_SCENARIO_LABEL": "シナリオ例：",
+        "EXAMPLE_SCENARIO_TEXT": "電気自動車市場の労働者の賃金が上昇",
+        "ELASTICITY_LABEL_DEMAND": "需要の弾力性",
+        "ELASTICITY_LABEL_SUPPLY": "供給の弾力性",
+        "INCIDENCE_LABEL_TAX": "税負担の帰着",
+        "INCIDENCE_LABEL_SUBSIDY": "補助金の帰着",
+        "CONSUMER_INCIDENCE": "消費者負担分",
+        "PRODUCER_INCIDENCE": "生産者負担分",
+        "FEEDBACK_LABEL": "フィードバック",
+        "LANGUAGE_SELECTOR_LABEL": "言語",
+        "POSITIVE_NUMBER_ERROR": "正の数を入力してください",
+        "VALID_NUMBER_ERROR": "有効な数値を入力してください（制限を設定しない場合は0）"
+    }    
 }
