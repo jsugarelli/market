@@ -327,14 +327,20 @@ def callback_language_change():
     st.session_state["language"] = st.session_state["language_selector"]
 
 def callback_pricelimits():
-    if (st.session_state.hoechstpreis > 0 and st.session_state.mindestpreis == 0) or (st.session_state.hoechstpreis == 0 and st.session_state.mindestpreis > 0):
-        mode_pricelimits()
-        st.session_state["max_price"] = st.session_state.hoechstpreis
-        st.session_state["min_price"] = st.session_state.mindestpreis
-        if st.session_state["max_price"] > 0:
-            st.session_state["limit_price"] = st.session_state["max_price"]
-        if st.session_state["min_price"] > 0:
-            st.session_state["limit_price"] = st.session_state["min_price"]
+    try:
+        hoechstpreis = float(st.session_state.hoechstpreis)
+        mindestpreis = float(st.session_state.mindestpreis)
+        
+        if (hoechstpreis > 0 and mindestpreis == 0) or (hoechstpreis == 0 and mindestpreis > 0):
+            mode_pricelimits()
+            st.session_state["max_price"] = hoechstpreis
+            st.session_state["min_price"] = mindestpreis
+            if st.session_state["max_price"] > 0:
+                st.session_state["limit_price"] = st.session_state["max_price"]
+            if st.session_state["min_price"] > 0:
+                st.session_state["limit_price"] = st.session_state["min_price"]
+    except ValueError:
+        pass  # Do nothing if inputs are not valid numbers
 
 def callback_elasticity_demand():
     new_elasticity = float(st.session_state.elasticity_demand_slider)
@@ -388,9 +394,23 @@ with tabs[1]:
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        hoechstpreis = st.number_input(get_translation("MAX_PRICE"), value=0.0, step=0.1, format="%.2f", key="hoechstpreis", on_change=callback_pricelimits)
+        try:
+            hoechstpreis = float(st.text_input(get_translation("MAX_PRICE"), value="0.0", key="hoechstpreis", on_change=callback_pricelimits))
+            if hoechstpreis < 0:
+                hoechstpreis = 0.0
+                st.error(get_translation("POSITIVE_NUMBER_ERROR"))
+        except ValueError:
+            hoechstpreis = 0.0
+            st.error(get_translation("VALID_NUMBER_ERROR"))
     with col2:
-        mindestpreis = st.number_input(get_translation("MIN_PRICE"), value=0.0, step=0.1, format="%.2f", key="mindestpreis", on_change=callback_pricelimits)
+        try:
+            mindestpreis = float(st.text_input(get_translation("MIN_PRICE"), value="0.0", key="mindestpreis", on_change=callback_pricelimits))
+            if mindestpreis < 0:
+                mindestpreis = 0.0
+                st.error(get_translation("POSITIVE_NUMBER_ERROR"))
+        except ValueError:
+            mindestpreis = 0.0
+            st.error(get_translation("VALID_NUMBER_ERROR"))
 
     if hoechstpreis != 0 and mindestpreis != 0:
         st.warning(get_translation("PRICE_LIMITS_WARNING"))
@@ -693,31 +713,38 @@ if st.session_state["mode"] == "shift" :
 
 # Plot welfare after min/max prices depending on view options
 if st.session_state["mode"] == "pricelimits":
+    # Check for warning conditions
+    has_warnings = (
+        (hoechstpreis != 0 and mindestpreis != 0) or
+        (mindestpreis != 0 and mindestpreis < st.session_state["equilibrium_price_original"]) or
+        (hoechstpreis != 0 and hoechstpreis > st.session_state["equilibrium_price_original"])
+    )
     
-    # Plot shifted surpluses after min/max prices
-    if surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH"):
-        if st.session_state["limit_price"] < st.session_state["equilibrium_price_original"]:
-            consumer_surplus_edges_limits = [(0, st.session_state["demand_intercept"]), (0, st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["limit_quantity"])]
-            producer_surplus_edges_limits = [(0, st.session_state["supply_intercept"]), (0, st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["limit_price"])]
-        else:
-            consumer_surplus_edges_limits = [(0, st.session_state["demand_intercept"]), (0, st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["limit_price"])]
-            producer_surplus_edges_limits = [(0, st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["supply_intercept"] + st.session_state["supply_slope"] * st.session_state["limit_quantity"]), (0, st.session_state["supply_intercept"])]
-        patch_consumer_surplus_limits = pt.Polygon(consumer_surplus_edges_limits, closed=True, fill=True, edgecolor='none',facecolor=demand_color, alpha=alpha_shift, label=get_translation("CONSUMER_SURPLUS_SHIFTED_LABEL"))
-        ax.add_patch(patch_consumer_surplus_limits)
-        legend_elements.append(patch_consumer_surplus_limits)
-        patch_producer_surplus_limits = pt.Polygon(producer_surplus_edges_limits, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha_shift, label=get_translation("PRODUCER_SURPLUS_SHIFTED_LABEL"))
-        ax.add_patch(patch_producer_surplus_limits)
-        legend_elements.append(patch_producer_surplus_limits)
-    
-    # Plot deadweight loss after min/max prices
-    if show_deadweight_loss:
-        if st.session_state["limit_price"] < st.session_state["equilibrium_price_original"]:
-            deadweight_loss_imits = [(st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (st.session_state["limit_quantity"], st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["limit_quantity"])]
-        else:
-            deadweight_loss_imits = [(st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (st.session_state["limit_quantity"], st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["supply_intercept"] + st.session_state["supply_slope"] * st.session_state["limit_quantity"])]
-        patch_deadweight_loss = pt.Polygon(deadweight_loss_imits, closed=True, fill=True, edgecolor='none',facecolor=deadweightloss_color, alpha=alpha_deadweight_loss, label=get_translation("DEADWEIGHT_LOSS_LABEL"))
-        ax.add_patch(patch_deadweight_loss)
-        legend_elements.append(patch_deadweight_loss)
+    if not has_warnings:
+        # Plot shifted surpluses after min/max prices
+        if surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH"):
+            if st.session_state["limit_price"] < st.session_state["equilibrium_price_original"]:
+                consumer_surplus_edges_limits = [(0, st.session_state["demand_intercept"]), (0, st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["limit_quantity"])]
+                producer_surplus_edges_limits = [(0, st.session_state["supply_intercept"]), (0, st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["limit_price"])]
+            else:
+                consumer_surplus_edges_limits = [(0, st.session_state["demand_intercept"]), (0, st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["limit_price"])]
+                producer_surplus_edges_limits = [(0, st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["supply_intercept"] + st.session_state["supply_slope"] * st.session_state["limit_quantity"]), (0, st.session_state["supply_intercept"])]
+            patch_consumer_surplus_limits = pt.Polygon(consumer_surplus_edges_limits, closed=True, fill=True, edgecolor='none',facecolor=demand_color, alpha=alpha_shift, label=get_translation("CONSUMER_SURPLUS_SHIFTED_LABEL"))
+            ax.add_patch(patch_consumer_surplus_limits)
+            legend_elements.append(patch_consumer_surplus_limits)
+            patch_producer_surplus_limits = pt.Polygon(producer_surplus_edges_limits, closed=True, fill=True, edgecolor='none',facecolor=supply_color, alpha=alpha_shift, label=get_translation("PRODUCER_SURPLUS_SHIFTED_LABEL"))
+            ax.add_patch(patch_producer_surplus_limits)
+            legend_elements.append(patch_producer_surplus_limits)
+        
+        # Plot deadweight loss after min/max prices
+        if show_deadweight_loss:
+            if st.session_state["limit_price"] < st.session_state["equilibrium_price_original"]:
+                deadweight_loss_imits = [(st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (st.session_state["limit_quantity"], st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["limit_quantity"])]
+            else:
+                deadweight_loss_imits = [(st.session_state["equilibrium_quantity_original"], st.session_state["equilibrium_price_original"]), (st.session_state["limit_quantity"], st.session_state["limit_price"]), (st.session_state["limit_quantity"], st.session_state["supply_intercept"] + st.session_state["supply_slope"] * st.session_state["limit_quantity"])]
+            patch_deadweight_loss = pt.Polygon(deadweight_loss_imits, closed=True, fill=True, edgecolor='none',facecolor=deadweightloss_color, alpha=alpha_deadweight_loss, label=get_translation("DEADWEIGHT_LOSS_LABEL"))
+            ax.add_patch(patch_deadweight_loss)
+            legend_elements.append(patch_deadweight_loss)
 
 # Add the legend to the right center of the graph
 ax.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1, 0.5), fontsize=16)
@@ -805,7 +832,7 @@ if show_quant_results:
         outp = get_translation("TOTAL_WELFARE_SHIFTED_LABEL") + " **" + str(round(consumer_surplus_modified + producer_surplus_modified, 2)) + "**"
         st.write(outp)
 
-    if st.session_state["gov_intervention"]:
+    if st.session_state["gov_intervention"] and st.session_state["mode"] != "pricelimits":
         if st.session_state["demand_shift"] < 0 or st.session_state["supply_shift"] < 0:
             incidence_label = get_translation("INCIDENCE_LABEL_TAX")
         else:
