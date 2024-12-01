@@ -937,7 +937,7 @@ with st.sidebar.expander(get_translation("ABOUT_EXPANDER")):
     
     # Add email with bot protection but clickable
     st.markdown(f"""
-        <a href="mailto:&#106;&#111;&#97;&#99;&#104;&#105;&#109;&#64;&#122;&#117;&#99;&#107;&#97;&#114;&#101;&#108;&#108;&#105;&#46;&#100;&#101;">
-            {get_translation("FEEDBACK_LABEL")}: joachim[at]zuckarelli[dot]de
+        <a href="mailto:&#106;&#111;&#97;&#99;&#104;&#105;&#109;&#46;&#122;&#117;&#99;&#107;&#97;&#114;&#101;&#108;&#108;&#105;&#64;&#104;&#109;&#46;&#101;&#100;&#117;">
+            {get_translation("FEEDBACK_LABEL")}: joachim.zuckarelli[at]hm[dot]edu
         </a>
     """, unsafe_allow_html=True)
