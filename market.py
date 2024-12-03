@@ -136,7 +136,7 @@ if "loaded" not in st.session_state:
     st.session_state["equilibrium_price_original"] = st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_original"]
     st.session_state["equilibrium_price_modified"] = 0
     st.session_state["equilibrium_mc_prosppay_newquantity"] = 0
-    st.session_state["elasticity_demand"] = -(st.session_state["demand_slope"] * 
+    st.session_state["elasticity_demand"] = (st.session_state["demand_slope"] * 
                                            st.session_state["equilibrium_price_original"] / 
                                            st.session_state["equilibrium_quantity_original"])
     st.session_state["elasticity_supply"] = (st.session_state["supply_slope"] * 
@@ -273,10 +273,10 @@ def callback_params():
     st.session_state["demand_intercept"] = float(st.session_state.demand_intercept_slider)
     st.session_state["supply_slope"] = float(st.session_state.supply_slope_slider)
     st.session_state["supply_intercept"] = float(st.session_state.supply_intercept_slider)
-    st.session_state["elasticity_demand"] = (st.session_state["demand_slope"] * 
+    st.session_state["elasticity_demand"] = (1/st.session_state["demand_slope"] * 
                                            st.session_state["equilibrium_price_original"] / 
                                            st.session_state["equilibrium_quantity_original"])
-    st.session_state["elasticity_supply"] = (st.session_state["supply_slope"] * 
+    st.session_state["elasticity_supply"] = (1/st.session_state["supply_slope"] * 
                                            st.session_state["equilibrium_price_original"] / 
                                            st.session_state["equilibrium_quantity_original"])
     st.session_state["fix_axes"] = st.session_state.fix_axes_checkbox
@@ -292,10 +292,10 @@ def callback_reset():
     st.session_state["line_thickness"] = 2.0    
     st.session_state["equilibrium_quantity_original"] = (st.session_state["demand_intercept"] - st.session_state["supply_intercept"]) / (st.session_state["supply_slope"] - st.session_state["demand_slope"])
     st.session_state["equilibrium_price_original"] = st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_original"]
-    st.session_state["elasticity_demand"] = (st.session_state["demand_slope"] * 
+    st.session_state["elasticity_demand"] = (1/st.session_state["demand_slope"] * 
                                            st.session_state["equilibrium_price_original"] / 
                                            st.session_state["equilibrium_quantity_original"])
-    st.session_state["elasticity_supply"] = (st.session_state["supply_slope"] * 
+    st.session_state["elasticity_supply"] = (1/st.session_state["supply_slope"] * 
                                            st.session_state["equilibrium_price_original"] / 
                                            st.session_state["equilibrium_quantity_original"])
 
@@ -343,19 +343,15 @@ def callback_pricelimits():
         pass  # Do nothing if inputs are not valid numbers
 
 def callback_elasticity_demand():
-    new_elasticity = float(st.session_state.elasticity_demand_slider)
-    st.session_state["demand_slope"] = -new_elasticity * st.session_state["equilibrium_quantity_original"] / st.session_state["equilibrium_price_original"]
-    st.session_state["demand_intercept"] = (st.session_state["supply_intercept"] + 
-                                          st.session_state["supply_slope"] * st.session_state["equilibrium_quantity_original"] - 
-                                          st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_original"])
+    new_elasticity = -float(st.session_state.elasticity_demand_slider)
+    st.session_state["demand_slope"] = 1/new_elasticity * st.session_state["equilibrium_price_original"] / st.session_state["equilibrium_quantity_original"]
+    st.session_state["demand_intercept"] = st.session_state["equilibrium_price_original"]*(1-1/new_elasticity)
     st.session_state["elasticity_demand"] = new_elasticity
 
 def callback_elasticity_supply():
     new_elasticity = float(st.session_state.elasticity_supply_slider)
-    st.session_state["supply_slope"] = new_elasticity * st.session_state["equilibrium_quantity_original"] / st.session_state["equilibrium_price_original"]
-    st.session_state["supply_intercept"] = (st.session_state["demand_intercept"] + 
-                                          st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_original"] - 
-                                          st.session_state["supply_slope"] * st.session_state["equilibrium_quantity_original"])
+    st.session_state["supply_slope"] = 1/new_elasticity * st.session_state["equilibrium_price_original"] / st.session_state["equilibrium_quantity_original"]
+    st.session_state["supply_intercept"] = st.session_state["equilibrium_price_original"]*(1-1/new_elasticity)
     st.session_state["elasticity_supply"] = new_elasticity
 
 
@@ -833,7 +829,7 @@ if show_quant_results:
         st.write(outp)
 
     if st.session_state["gov_intervention"] and st.session_state["mode"] != "pricelimits":
-        if st.session_state["demand_shift"] < 0 or st.session_state["supply_shift"] < 0:
+        if st.session_state["demand_shift"] < 0 or st.session_state["supply_shift"] > 0:
             incidence_label = get_translation("INCIDENCE_LABEL_TAX")
         else:
             incidence_label = get_translation("INCIDENCE_LABEL_SUBSIDY")        
@@ -887,8 +883,8 @@ with st.sidebar.expander(get_translation("CURVE_PARAMS_EXPANDER")):
     st.text_input(get_translation("DEMAND_SLOPE_LABEL"), value=str(st.session_state["demand_slope"]), key="demand_slope_slider", on_change=callback_params)
     st.text_input(get_translation("DEMAND_INTERCEPT_LABEL"), value=str(st.session_state["demand_intercept"]), key="demand_intercept_slider", on_change=callback_params)
     st.number_input(get_translation("ELASTICITY_LABEL_DEMAND"), 
-                   value=float(st.session_state["elasticity_demand"]), 
-                   min_value=-100.0, 
+                   value=-1*float(st.session_state["elasticity_demand"]), 
+                   min_value=0.0, 
                    max_value=100.0, 
                    step=0.1, 
                    key="elasticity_demand_slider", 
@@ -897,7 +893,7 @@ with st.sidebar.expander(get_translation("CURVE_PARAMS_EXPANDER")):
     st.text_input(get_translation("SUPPLY_INTERCEPT_LABEL"), value=str(st.session_state["supply_intercept"]), key="supply_intercept_slider", on_change=callback_params)
     st.number_input(get_translation("ELASTICITY_LABEL_SUPPLY"), 
                    value=float(st.session_state["elasticity_supply"]), 
-                   min_value=-100.0, 
+                   min_value=0.0, 
                    max_value=100.0, 
                    step=0.1, 
                    key="elasticity_supply_slider", 
