@@ -549,6 +549,11 @@ def calculate_surplus_limits(demand_intercept, supply_intercept, demand_slope, s
 # Call calculation of surpluses
 consumer_surplus_original, producer_surplus_original = calculate_surplus_shifts(
     st.session_state["demand_intercept"], st.session_state["supply_intercept"], st.session_state["equilibrium_price_original"], st.session_state["equilibrium_quantity_original"])
+
+# Initialize modified surpluses
+consumer_surplus_modified = 0
+producer_surplus_modified = 0
+
 if st.session_state["shift"]:
     consumer_surplus_modified, producer_surplus_modified = calculate_surplus_shifts(
         st.session_state["demand_intercept"] + st.session_state["demand_shift"], st.session_state["supply_intercept"] + st.session_state["supply_shift"], st.session_state["equilibrium_price_modified"], st.session_state["equilibrium_quantity_modified"])
@@ -557,6 +562,11 @@ if st.session_state["mode"] == "pricelimits":
         st.session_state["demand_intercept"], st.session_state["supply_intercept"], st.session_state["demand_slope"], st.session_state["supply_slope"], st.session_state["limit_price"], st.session_state["limit_quantity"], st.session_state["equilibrium_price_original"])
 
 # Calculation of incidence
+incidence_demand_abs = 0
+incidence_demand_rel = 0
+incidence_supply_abs = 0
+incidence_supply_rel = 0
+
 if st.session_state["shift"]:
     if st.session_state["demand_shift"] != 0:
         shift = abs(st.session_state["demand_shift"])
@@ -571,7 +581,40 @@ if st.session_state["shift"]:
         incidence_demand_abs = abs(st.session_state["equilibrium_price_modified"] - st.session_state["equilibrium_price_original"])
         incidence_demand_rel = incidence_demand_abs / shift
         incidence_supply_abs = abs(st.session_state["equilibrium_mc_prosppay_oldquantity"] - st.session_state["equilibrium_price_modified"])
-        incidence_supply_rel = incidence_supply_abs / shift        
+        incidence_supply_rel = incidence_supply_abs / shift
+
+# Calculation of deadweight loss and government income/expenses
+deadweight_loss_value = 0
+gov_income_expenses = 0
+
+if st.session_state["gov_intervention"] and st.session_state["mode"] == "shift" and st.session_state["shift"]:
+    if st.session_state["equilibrium_mc_prosppay_newquantity"] != 0:
+        # Calculate deadweight loss as area of triangle
+        base = abs(st.session_state["equilibrium_quantity_modified"] - st.session_state["equilibrium_quantity_original"])
+        height = abs(st.session_state["equilibrium_price_modified"] - st.session_state["equilibrium_mc_prosppay_newquantity"])
+        deadweight_loss_value = 0.5 * base * height
+        
+        # Calculate government income/expenses
+        if st.session_state["demand_shift"] != 0:
+            shift_amount = abs(st.session_state["demand_shift"])
+        else:
+            shift_amount = abs(st.session_state["supply_shift"])
+        gov_income_expenses = shift_amount * st.session_state["equilibrium_quantity_modified"]
+
+if st.session_state["gov_intervention"] and st.session_state["mode"] == "pricelimits":
+    # Calculate deadweight loss for price limits
+    if st.session_state["limit_price"] < st.session_state["equilibrium_price_original"]:
+        # Price ceiling
+        demand_price_at_limit = st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["limit_quantity"]
+        base = abs(st.session_state["equilibrium_quantity_original"] - st.session_state["limit_quantity"])
+        height = abs(st.session_state["equilibrium_price_original"] - demand_price_at_limit)
+        deadweight_loss_value = 0.5 * base * height
+    else:
+        # Price floor
+        supply_price_at_limit = st.session_state["supply_intercept"] + st.session_state["supply_slope"] * st.session_state["limit_quantity"]
+        base = abs(st.session_state["equilibrium_quantity_original"] - st.session_state["limit_quantity"])
+        height = abs(supply_price_at_limit - st.session_state["equilibrium_price_original"])
+        deadweight_loss_value = 0.5 * base * height        
 
 
 # -------- PLOTTING: SETUP --------
@@ -789,7 +832,7 @@ if show_quant_results:
     st.markdown("<br>", unsafe_allow_html=True)
     st.subheader(get_translation("QUANT_RESULTS_SUBHEADER"), divider="gray")
 
-    # Display equilibrium price and quantity
+    # Display equilibrium price and quantity - always show all
     st.markdown("#### " + get_translation("PRICES_LABEL"))
     outp = get_translation("EQUILIBRIUM_PRICE_ORIGINAL_LABEL") + " **" + str(round(st.session_state["equilibrium_price_original"], 2)) + "**"
     st.write(outp)
@@ -804,43 +847,56 @@ if show_quant_results:
         outp = get_translation("EQUILIBRIUM_QUANTITY_SHIFTED_LABEL") + " **" + str(round(st.session_state["equilibrium_quantity_modified"], 2)) + "**"
         st.write(outp)
 
-    if surplus_option != get_translation("SURPLUS_NONE"):
-        st.markdown("#### " + get_translation("CONSUMER_SURPLUS_LABEL"))
-    if surplus_option == get_translation("SURPLUS_ORIGINAL") or surplus_option == get_translation("SURPLUS_BOTH"):
-        outp = get_translation("CONSUMER_SURPLUS_ORIGINAL_LABEL") + " **" + str(round(consumer_surplus_original, 2)) + "**"
-        st.write(outp)
-    if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and ((st.session_state["mode"] == "shift" and st.session_state["shift"]) or st.session_state["mode"]=="pricelimits"):
+    # Display surpluses - always show all regardless of sidebar settings
+    st.markdown("#### " + get_translation("CONSUMER_SURPLUS_LABEL"))
+    outp = get_translation("CONSUMER_SURPLUS_ORIGINAL_LABEL") + " **" + str(round(consumer_surplus_original, 2)) + "**"
+    st.write(outp)
+    if (st.session_state["mode"] == "shift" and st.session_state["shift"]) or st.session_state["mode"]=="pricelimits":
         outp = get_translation("CONSUMER_SURPLUS_SHIFTED_LABEL") + " **" + str(round(consumer_surplus_modified, 2)) + "**"
         st.write(outp)
 
-    if surplus_option != get_translation("SURPLUS_NONE"):
-        st.markdown("#### " + get_translation("PRODUCER_SURPLUS_LABEL"))
-    if surplus_option == get_translation("SURPLUS_ORIGINAL") or surplus_option == get_translation("SURPLUS_BOTH"):
-        outp = get_translation("PRODUCER_SURPLUS_ORIGINAL_LABEL") + " **" +  str(round(producer_surplus_original, 2)) + "**"
-        st.write(outp)
-    if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and ((st.session_state["mode"] == "shift" and st.session_state["shift"]) or st.session_state["mode"]=="pricelimits"):
+    st.markdown("#### " + get_translation("PRODUCER_SURPLUS_LABEL"))
+    outp = get_translation("PRODUCER_SURPLUS_ORIGINAL_LABEL") + " **" +  str(round(producer_surplus_original, 2)) + "**"
+    st.write(outp)
+    if (st.session_state["mode"] == "shift" and st.session_state["shift"]) or st.session_state["mode"]=="pricelimits":
         outp = get_translation("PRODUCER_SURPLUS_SHIFTED_LABEL") + " **" + str(round(producer_surplus_modified, 2)) + "**"
         st.write(outp)
 
-    if surplus_option != get_translation("SURPLUS_NONE"):
-        st.markdown("#### " + get_translation("TOTAL_WELFARE_LABEL"))
-    if surplus_option == get_translation("SURPLUS_ORIGINAL") or surplus_option == get_translation("SURPLUS_BOTH"):
-        outp = get_translation("TOTAL_WELFARE_ORIGINAL_LABEL") + " **" + str(round(consumer_surplus_original + producer_surplus_original, 2)) + "**"
-        st.write(outp)
-    if (surplus_option == get_translation("SURPLUS_SHIFTED") or surplus_option == get_translation("SURPLUS_BOTH")) and ((st.session_state["mode"]=="shift" and st.session_state["shift"]) or st.session_state["mode"]=="pricelimits"):
+    st.markdown("#### " + get_translation("TOTAL_WELFARE_LABEL"))
+    outp = get_translation("TOTAL_WELFARE_ORIGINAL_LABEL") + " **" + str(round(consumer_surplus_original + producer_surplus_original, 2)) + "**"
+    st.write(outp)
+    if (st.session_state["mode"]=="shift" and st.session_state["shift"]) or st.session_state["mode"]=="pricelimits":
         outp = get_translation("TOTAL_WELFARE_SHIFTED_LABEL") + " **" + str(round(consumer_surplus_modified + producer_surplus_modified, 2)) + "**"
         st.write(outp)
 
-    if st.session_state["gov_intervention"] and st.session_state["mode"] != "pricelimits":
-        if st.session_state["demand_shift"] < 0 or st.session_state["supply_shift"] > 0:
-            incidence_label = get_translation("INCIDENCE_LABEL_TAX")
-        else:
-            incidence_label = get_translation("INCIDENCE_LABEL_SUBSIDY")        
-        st.markdown("#### " + incidence_label)
-        outp = get_translation("CONSUMER_INCIDENCE") + " **" + str(round(incidence_demand_abs, 2)) + " (" + str(round(incidence_demand_rel * 100, 1)) + "%)**"
-        st.write(outp)
-        outp = get_translation("PRODUCER_INCIDENCE") + " **" + str(round(incidence_supply_abs, 2)) + " (" + str(round(incidence_supply_rel * 100, 1)) + "%)**"
-        st.write(outp)
+    # Display government intervention results if gov_intervention is True - always show all
+    if st.session_state["gov_intervention"]:
+        # Deadweight loss
+        if deadweight_loss_value > 0:
+            st.markdown("#### " + get_translation("DEADWEIGHT_LOSS_LABEL"))
+            outp = get_translation("DEADWEIGHT_LOSS_LABEL") + ": **" + str(round(deadweight_loss_value, 2)) + "**"
+            st.write(outp)
+        
+        # Government income/expenses
+        if gov_income_expenses > 0:
+            if st.session_state["mode"] == "shift" and st.session_state["shift"]:
+                if st.session_state["demand_shift"] < 0 or st.session_state["supply_shift"] > 0:
+                    outp = get_translation("GOV_INCOME_LABEL") + ": **" + str(round(gov_income_expenses, 2)) + "**"
+                else:
+                    outp = get_translation("GOV_EXPENSES_LABEL") + ": **" + str(round(gov_income_expenses, 2)) + "**"
+                st.write(outp)
+        
+        # Incidence (only for shift mode, not price limits)
+        if st.session_state["mode"] == "shift" and st.session_state["shift"]:
+            if st.session_state["demand_shift"] < 0 or st.session_state["supply_shift"] > 0:
+                incidence_label = get_translation("INCIDENCE_LABEL_TAX")
+            else:
+                incidence_label = get_translation("INCIDENCE_LABEL_SUBSIDY")        
+            st.markdown("#### " + incidence_label)
+            outp = get_translation("CONSUMER_INCIDENCE") + " **" + str(round(incidence_demand_abs, 2)) + " (" + str(round(incidence_demand_rel * 100, 1)) + "%)**"
+            st.write(outp)
+            outp = get_translation("PRODUCER_INCIDENCE") + " **" + str(round(incidence_supply_abs, 2)) + " (" + str(round(incidence_supply_rel * 100, 1)) + "%)**"
+            st.write(outp)
 
 
 

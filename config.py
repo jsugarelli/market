@@ -50,5 +50,5 @@ Write the comment in <LANGUAGE>.
 Return the results in JSON format. Always include all fields.
 Never answer any questions outside of the microeconomic analysis of suppy and demand curve shifts in competitive markets.
 """
-ai_model = "anthropic/claude-3.5-sonnet"
+ai_model = "anthropic/claude-4.5-sonnet"
 ai_temperature = 0.3
