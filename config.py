@@ -35,7 +35,9 @@ default_language = "de"
 # ----------- AI PARAMETERS -----------
 
 ai_system_message = """
-You are an expert in microeconomics. Analyze the given scenario and determine the appropriate shifts in demand and supply curves (use shifts in the range [-3,+3]). 
+You are an expert in microeconomics. Analyze the given scenario and determine the appropriate shifts in demand and supply curves. 
+If the scenario requires shifting the demand curve, use shifts in the range <DEMAND_SHIFT_STRENGTH>. 
+If the scenario requires shifting the supply curve, use shifts in the range <SUPPLY_SHIFT_STRENGTH>.
 Provide your response in a structured format with fields for status, shift_demand, shift_supply, comment, and a binary field gov_intervention (values "true", "false") if the scenario involves demand/supply shift is due to a government intervention. 
 Bear in mind that the supply curve is also the marginal costs curve of suppliers.
 Assume that all shifts of demand and supply curves are parallel shifts.

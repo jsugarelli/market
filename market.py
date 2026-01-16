@@ -189,9 +189,23 @@ def mode_pricelimits():
 
 # Call the API
 def call_openrouter_api(user_input):
-    try:                
+    try:
+        # Calculate reasonable shift ranges based on intercepts
+        max_shift_demand = abs(st.session_state["demand_intercept"]) * 0.7
+        max_shift_demand = round(max_shift_demand, 1)
+        demand_shift_range_str = f"[-{max_shift_demand}, +{max_shift_demand}]"
+        
+        max_shift_supply = abs(st.session_state["supply_intercept"]) * 0.7
+        max_shift_supply = round(max_shift_supply, 1)
+        supply_shift_range_str = f"[-{max_shift_supply}, +{max_shift_supply}]"
+        
+        # Replace placeholders in system message
+        system_msg = ai_system_message.replace("<LANGUAGE>", st.session_state["language"])
+        system_msg = system_msg.replace("<DEMAND_SHIFT_STRENGTH>", demand_shift_range_str)
+        system_msg = system_msg.replace("<SUPPLY_SHIFT_STRENGTH>", supply_shift_range_str)
+                
         response_text, generation_time = query_openrouter(
-            system_message=ai_system_message.replace("<LANGUAGE>", st.session_state["language"]),
+            system_message=system_msg,
             user_prompt=user_input,
             model_name=ai_model,
             temperature=ai_temperature
@@ -382,8 +396,20 @@ tabs = st.tabs(tablist)
 
 with tabs[0]:    
     st.markdown("<br>", unsafe_allow_html=True)
-    slider_value_demand = st.slider(get_translation("SHIFT_DEMAND"), key="slider1", min_value=-10.0, max_value=10.0, value=float(st.session_state["demand_shift"]), step=1.0, on_change=callback_shifts)
-    slider_value_supply = st.slider(get_translation("SHIFT_SUPPLY"), key="slider2", min_value=-10.0, max_value=10.0, value=float(st.session_state["supply_shift"]), step=1.0, on_change=callback_shifts)
+    # Calculate reasonable shift ranges based on intercepts to keep shifted curves visible on Y axis
+    # Allow shifts up to 70% of intercept to ensure shifted intercepts remain visible
+    max_shift_demand = abs(st.session_state["demand_intercept"]) * 0.7
+    min_shift_demand = -max_shift_demand
+    max_shift_demand = round(max_shift_demand, 1)
+    min_shift_demand = round(min_shift_demand, 1)
+    
+    max_shift_supply = abs(st.session_state["supply_intercept"]) * 0.7
+    min_shift_supply = -max_shift_supply
+    max_shift_supply = round(max_shift_supply, 1)
+    min_shift_supply = round(min_shift_supply, 1)
+    
+    slider_value_demand = st.slider(get_translation("SHIFT_DEMAND"), key="slider1", min_value=min_shift_demand, max_value=max_shift_demand, value=float(st.session_state["demand_shift"]), step=0.5, on_change=callback_shifts)
+    slider_value_supply = st.slider(get_translation("SHIFT_SUPPLY"), key="slider2", min_value=min_shift_supply, max_value=max_shift_supply, value=float(st.session_state["supply_shift"]), step=0.5, on_change=callback_shifts)
     st.checkbox(get_translation("GOV_INTERVENTION_CHECKBOX"), st.session_state["gov_intervention"], on_change=callback_gov)
 
 with tabs[1]:
@@ -652,8 +678,13 @@ if st.session_state["fix_axes"]:
     ax.set_xlim(0, math.ceil(demand_intercept / ((-1)*demand_slope))+5)
     ax.set_ylim(0, math.ceil(demand_intercept)+5)
 else:
-    ax.set_xlim(0, math.ceil(max(st.session_state["demand_intercept"], st.session_state["demand_intercept"] + st.session_state["demand_shift"]) / ((-1)*st.session_state["demand_slope"]))+5)
-    ax.set_ylim(0, math.ceil(max(st.session_state["demand_intercept"], st.session_state["demand_intercept"] + st.session_state["demand_shift"]))+5)
+    # Calculate max intercepts including shifts to ensure all curves are visible
+    max_demand_intercept = max(st.session_state["demand_intercept"], st.session_state["demand_intercept"] + st.session_state["demand_shift"])
+    max_supply_intercept = max(st.session_state["supply_intercept"], st.session_state["supply_intercept"] + st.session_state["supply_shift"])
+    max_intercept = max(max_demand_intercept, max_supply_intercept)
+    
+    ax.set_xlim(0, math.ceil(max_demand_intercept / ((-1)*st.session_state["demand_slope"]))+5)
+    ax.set_ylim(0, math.ceil(max_intercept)+5)
 
 # Add gridlines if show_grid is True
 if st.session_state["show_grid"]:
