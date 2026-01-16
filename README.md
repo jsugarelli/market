@@ -183,6 +183,7 @@ Da die umfassende AGPL-Lizenz dies zuläßt (siehe unten), können Sie als Berei
 **Features**
 * `use_gallery`: Steuert, ob vorgefertigte Szenarien dem Benutzer angeboten werden.
 * `use_ai`: Steuert, ob der Benutzer mit Hilfe künstlicher Intelligenz selbst eingegebene Szenarien analysieren lassen kann.
+* `debug_terminal`: Steuert, ob Debug-Ausgaben in der Konsole angezeigt werden. Wenn auf `True` gesetzt, werden die Systemnachricht, die Benutzereingabe, die rohe API-Antwort, der geparste JSON-Ergebnis und alle Zwischenschritte der KI-Analyse in der Konsole ausgegeben. Dies ist nützlich zum Debuggen von Problemen mit der KI-Analyse. Standardwert ist `False`.
 * `ai_system_message`: Steuert die Systemnachricht, die der künstlichen Intelligenz als Vorgabe für die Analyse der vom Benutzer eingegebenen Szenarien dient.
 * `ai_model`: Steuert das verwendete KI-Modell; die Modellbezeichnungen sind die bei OpenRouter (https://openrouter.ai/) gelisteten, also zum Beispiel `anthropic/claude-3.5-sonnet`.
 * `ai_temperature`: "Temperatur" des KI-Modells, stets zwischen 0 und 1, steuert die "Kreativität" der Antworten der AI.
@@ -411,6 +412,7 @@ Since the comprehensive AGPL license permits this (see below), you, as the provi
 **Features**
 * `use_gallery`: Controls whether predefined scenarios are offered to users.
 * `use_ai`: Determines whether users can analyze self-entered scenarios with artificial intelligence.
+* `debug_terminal`: Controls whether debug output is displayed in the console. When set to `True`, the system message, user input, raw API response, parsed JSON result, and all intermediate steps of the AI analysis are printed to the console. This is useful for debugging issues with the AI analysis. Default value is `False`.
 * `ai_system_message`: Sets the system message for guiding the AI's analysis of user-defined scenarios.
 * `ai_model`: Specifies the AI model to use; the model names correspond to those listed on OpenRouter (e.g., `anthropic/claude-3.5-sonnet`).
 * `ai_temperature`: The "temperature" of the AI model, between 0 and 1, which controls the "creativity" of the AI's responses.

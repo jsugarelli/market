@@ -190,19 +190,33 @@ def mode_pricelimits():
 # Call the API
 def call_openrouter_api(user_input):
     try:
-        # Calculate reasonable shift ranges based on intercepts
-        max_shift_demand = abs(st.session_state["demand_intercept"]) * 0.7
-        max_shift_demand = round(max_shift_demand, 1)
-        demand_shift_range_str = f"[-{max_shift_demand}, +{max_shift_demand}]"
+        # Calculate fixed absolute shift values for up and down shifts
+        # For demand: up shift can go higher, down shift limited by intercept
+        demand_intercept = abs(st.session_state["demand_intercept"])
+        demand_shift_up = round(demand_intercept * 0.5, 1)  # Can shift up 50% of intercept
+        demand_shift_down = round(demand_intercept * 0.5, 1)  # Can shift down 50% of intercept
         
-        max_shift_supply = abs(st.session_state["supply_intercept"]) * 0.7
-        max_shift_supply = round(max_shift_supply, 1)
-        supply_shift_range_str = f"[-{max_shift_supply}, +{max_shift_supply}]"
+        # For supply: up shift has more room (toward demand intercept), down shift limited by supply intercept
+        supply_intercept = abs(st.session_state["supply_intercept"])
+        # Up shift: can go up toward demand intercept, but keep it moderate to preserve visible surpluses
+        supply_shift_up = round((demand_intercept - supply_intercept) * 0.4 + supply_intercept * 0.3, 1)
+        supply_shift_down = round(supply_intercept * 0.5, 1)  # Can shift down 50% of intercept
         
         # Replace placeholders in system message
         system_msg = ai_system_message.replace("<LANGUAGE>", st.session_state["language"])
-        system_msg = system_msg.replace("<DEMAND_SHIFT_STRENGTH>", demand_shift_range_str)
-        system_msg = system_msg.replace("<SUPPLY_SHIFT_STRENGTH>", supply_shift_range_str)
+        system_msg = system_msg.replace("<DEMAND_SHIFT_UP>", str(demand_shift_up))
+        system_msg = system_msg.replace("<DEMAND_SHIFT_DOWN>", str(demand_shift_down))
+        system_msg = system_msg.replace("<SUPPLY_SHIFT_UP>", str(supply_shift_up))
+        system_msg = system_msg.replace("<SUPPLY_SHIFT_DOWN>", str(supply_shift_down))
+        
+        if debug_terminal:
+            print("=" * 80)
+            print("DEBUG: AI System Message:")
+            print("=" * 80)
+            print(system_msg)
+            print("=" * 80)
+            print(f"DEBUG: User Input: {user_input}")
+            print("=" * 80)
                 
         response_text, generation_time = query_openrouter(
             system_message=system_msg,
@@ -210,36 +224,128 @@ def call_openrouter_api(user_input):
             model_name=ai_model,
             temperature=ai_temperature
         )
+        
+        if debug_terminal:
+            print("=" * 80)
+            print("DEBUG: Raw API Response:")
+            print("=" * 80)
+            print(response_text)
+            print("=" * 80)
                 
         return response_text
     except Exception as e:        
         error_message = get_translation("API_ERROR_WARNING")
         st.warning(f"{error_message}: {str(e)}")
+        if debug_terminal:
+            print("=" * 80)
+            print(f"DEBUG: API Error: {str(e)}")
+            print("=" * 80)
         return f"Error: {str(e)}"
 
 # Parse the API response
 def parse_api_response(response):
     try:
         result = json.loads(response)
+        if debug_terminal:
+            print("=" * 80)
+            print("DEBUG: Parsed JSON (successful):")
+            print("=" * 80)
+            print(json.dumps(result, indent=2))
+            print("=" * 80)
     except json.JSONDecodeError:
+        if debug_terminal:
+            print("=" * 80)
+            print("DEBUG: JSON parsing failed, trying line-by-line parsing")
+            print("=" * 80)
         lines = response.strip().split('\n')
         result = {}
         for line in lines:
+            # Try to extract JSON-like key-value pairs
+            line = line.strip()
+            if not line or line.startswith('{') or line.startswith('}') or line.startswith('```'):
+                continue
+            # Remove trailing comma if present
+            if line.endswith(','):
+                line = line[:-1]
             parts = line.split(':', 1)
             if len(parts) == 2:
                 key, value = parts
-                result[key.strip()] = value.strip()    
+                # Clean key: remove quotes and whitespace
+                key = key.strip().strip('"').strip("'")
+                # Clean value: remove quotes, whitespace, and trailing commas
+                value = value.strip().rstrip(',').strip()
+                # Remove surrounding quotes if present
+                if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+                    value = value[1:-1]
+                # Try to parse as number if it looks like one
+                try:
+                    if '.' in value:
+                        result[key] = float(value)
+                    else:
+                        result[key] = int(value)
+                except ValueError:
+                    # Check for boolean strings
+                    if value.lower() == 'true':
+                        result[key] = True
+                    elif value.lower() == 'false':
+                        result[key] = False
+                    else:
+                        result[key] = value
+        if debug_terminal:
+            print("DEBUG: Line-by-line parsed result:")
+            print(json.dumps(result, indent=2))
+            print("=" * 80)
     
     try:
-        return {
+        # Extract shift values, handling both string and numeric types
+        shift_demand_raw = result.get("shift_demand", 0) or 0
+        shift_supply_raw = result.get("shift_supply", 0) or 0
+        
+        # Convert to float, handling string values
+        if isinstance(shift_demand_raw, str):
+            shift_demand_raw = shift_demand_raw.replace(',', '').strip()
+        if isinstance(shift_supply_raw, str):
+            shift_supply_raw = shift_supply_raw.replace(',', '').strip()
+            
+        shift_demand = float(shift_demand_raw) if shift_demand_raw else 0.0
+        shift_supply = float(shift_supply_raw) if shift_supply_raw else 0.0
+        
+        # Extract gov_intervention, handling string "true"/"false"
+        gov_intervention_raw = result.get("gov_intervention", "False")
+        if isinstance(gov_intervention_raw, str):
+            gov_intervention = gov_intervention_raw.lower() in ['true', '1', 'yes']
+        else:
+            gov_intervention = bool(gov_intervention_raw)
+        
+        # Extract comment, cleaning it up
+        comment_raw = result.get("comment", "")
+        if isinstance(comment_raw, str):
+            comment = comment_raw.strip().strip('"').strip("'")
+        else:
+            comment = str(comment_raw) if comment_raw else ""
+        
+        parsed_result = {
             "status": result.get("status", "okay"),
-            "shift_demand": float(result.get("shift_demand", 0) or 0),
-            "shift_supply": float(result.get("shift_supply", 0) or 0),
-            "gov_intervention": bool(result.get("gov_intervention", "False"))   ,
-            "comment": result.get("comment", "")
+            "shift_demand": shift_demand,
+            "shift_supply": shift_supply,
+            "gov_intervention": gov_intervention,
+            "comment": comment
         }
+        if debug_terminal:
+            print("=" * 80)
+            print("DEBUG: Final parsed result:")
+            print("=" * 80)
+            print(json.dumps(parsed_result, indent=2))
+            print("=" * 80)
+        return parsed_result
     except Exception as e:
-        print(f"Error extracting values from parsed result: {str(e)}")
+        if debug_terminal:
+            print("=" * 80)
+            print(f"DEBUG: Error extracting values from parsed result: {str(e)}")
+            print(f"DEBUG: Raw result was: {result}")
+            import traceback
+            print(traceback.format_exc())
+            print("=" * 80)
         comment = ""
         return {"status": "error", "message": str(e), "comment": comment}
 
@@ -476,6 +582,12 @@ if st.session_state["use_ai"]:
                 with st.spinner(get_translation("ANALYZING_MESSAGE")):
                     api_response = call_openrouter_api(user_input)
                     result = parse_api_response(api_response)
+                    if debug_terminal:
+                        print("=" * 80)
+                        print("DEBUG: Result stored in session state:")
+                        print("=" * 80)
+                        print(json.dumps(result, indent=2))
+                        print("=" * 80)
                     st.session_state["ai_result"] = result
                     
                     if result["status"] == "error" and result.get("comment")=="":
