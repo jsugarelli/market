@@ -443,6 +443,9 @@ if st.session_state["use_ai"]:
         
         user_input = st.text_area(get_translation("AI_INPUT_LABEL"), height=150)
         if st.button(get_translation("ANALYZE_BUTTON")):
+            # Clear scenario explanation when analyzing with AI
+            st.session_state["gallery_selected"] = "(bitte wählen)"
+            
             if "user_api_key" in st.session_state or st.secrets.get("API_KEY"):
                 with st.spinner(get_translation("ANALYZING_MESSAGE")):
                     api_response = call_openrouter_api(user_input)
