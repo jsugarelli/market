@@ -1127,6 +1127,15 @@ with st.sidebar.expander(get_translation("ABOUT_EXPANDER")):
     st.write(get_translation("VERSION_LABEL"))
     st.write("Joachim Zuckarelli")
     
+    # Tutorial Video
+    st.markdown(f"**{get_translation('TUTORIAL_VIDEO_LABEL')}**")
+    st.markdown(f"{get_translation('TUTORIAL_VIDEO_TEXT')}")
+    st.markdown("[Market Simulator Tutorial](https://youtu.be/wz14meK5BuE?si=npHJZWfZrFqOGXHX)")
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # GitHub Repository
+    st.markdown(f"**{get_translation('GITHUB_LABEL')}**")
+    st.markdown(f"{get_translation('GITHUB_TEXT')}")
     col1, col2 = st.columns([1, 4])
     with col1:
         st.image("social-github-col.png", width=30)

@@ -26,6 +26,7 @@ Der Market Simulator ermöglicht, im **Modell des vollkommenen Wettbewerbsmarkte
     - [Kernfunktionen für den Benutzer (zum Beispiel Student, Dozent)](#kernfunktionen-für-den-benutzer-zum-beispiel-student-dozent)
     - [Kernfunktionen für den Bereitsteller (zum Beispiel Universität)](#kernfunktionen-für-den-bereitsteller-zum-beispiel-universität)
   - [Wie kann ich als Benutzer den Market Simulator verwenden?](#wie-kann-ich-als-benutzer-den-market-simulator-verwenden)
+    - [Tutorial-Video](#tutorial-video)
     - [Aufbau der Benutzeroberfläche](#aufbau-der-benutzeroberfläche)
     - [Anpassung der Grundeinstellungen](#anpassung-der-grundeinstellungen)
       - [Anzeigeeinstellungen](#anzeigeeinstellungen)
@@ -53,6 +54,7 @@ Der Market Simulator ermöglicht, im **Modell des vollkommenen Wettbewerbsmarkte
     - [Core Features for Users (e.g., Students, Lecturers)](#core-features-for-users-eg-students-lecturers)
     - [Core Features for Providers (e.g., Universities)](#core-features-for-providers-eg-universities)
   - [How can I use the Market Simulator as a user?](#how-can-i-use-the-market-simulator-as-a-user)
+    - [Tutorial Video](#tutorial-video-1)
     - [Interface Layout](#interface-layout)
     - [Customizing Basic Settings](#customizing-basic-settings)
       - [Display Settings](#display-settings)
@@ -96,6 +98,9 @@ Der Market Simulator stellt Ihnen als Benutzer eine ganze Reihe praktischer Funk
 Als Bereitsteller, der die App für eine Benutzergruppe anbietet, können Sie viele Aspekte des Market Simulators durch entsprechende Konfigurationseinstellungen anpassen und auf Ihre Bedürfnisse zuschneiden; dazu gehören zum Beispiel die Standardsprache der Benutzeroberfläche, die Farben sowie die Verfügbarkeit von Features wie vorgefertigte Szenarien oder Szenarienanalyse mit Hilfe künstlicher Intelligenz (KI). Vorgefertigte Szenarien erlauben es Ihnen, Ihren Anwendern fertige Szenarien zur Benutzung anzubieten (etwa die Erhhöhung der Faktorpreise oder die Einführung einer Steuer), die mit einem erklärenden Text versehen werden können. Durch Freigabe des KI-Features (setzt einen OpenRouter-API-Schlüsselvoraus) können Sie Ihren Anwendern gestatten, eigene Szenarien verbal einzugeben und die künstliche Intelligenz diese Szenarien dann in entsprechende Kurvenverschiebungen übersetzen und verbal erklären lassen.
 
 ## Wie kann ich als Benutzer den Market Simulator verwenden?
+
+### Tutorial-Video
+Ein deutschsprachiges Tutorial-Video zur Verwendung des Market Simulators ist auf YouTube verfügbar: [Market Simulator Tutorial](https://youtu.be/wz14meK5BuE?si=npHJZWfZrFqOGXHX)
 
 ### Aufbau der Benutzeroberfläche
 
@@ -251,6 +256,7 @@ The Market Simulator allows the **analysis of changes in exogenous variables** i
     - [Kernfunktionen für den Benutzer (zum Beispiel Student, Dozent)](#kernfunktionen-für-den-benutzer-zum-beispiel-student-dozent)
     - [Kernfunktionen für den Bereitsteller (zum Beispiel Universität)](#kernfunktionen-für-den-bereitsteller-zum-beispiel-universität)
   - [Wie kann ich als Benutzer den Market Simulator verwenden?](#wie-kann-ich-als-benutzer-den-market-simulator-verwenden)
+    - [Tutorial-Video](#tutorial-video)
     - [Aufbau der Benutzeroberfläche](#aufbau-der-benutzeroberfläche)
     - [Anpassung der Grundeinstellungen](#anpassung-der-grundeinstellungen)
       - [Anzeigeeinstellungen](#anzeigeeinstellungen)
@@ -278,6 +284,7 @@ The Market Simulator allows the **analysis of changes in exogenous variables** i
     - [Core Features for Users (e.g., Students, Lecturers)](#core-features-for-users-eg-students-lecturers)
     - [Core Features for Providers (e.g., Universities)](#core-features-for-providers-eg-universities)
   - [How can I use the Market Simulator as a user?](#how-can-i-use-the-market-simulator-as-a-user)
+    - [Tutorial Video](#tutorial-video-1)
     - [Interface Layout](#interface-layout)
     - [Customizing Basic Settings](#customizing-basic-settings)
       - [Display Settings](#display-settings)
@@ -324,6 +331,9 @@ As a provider offering the app to a user group, you can customize many aspects o
 Predefined scenarios allow you to offer ready-made scenarios to your users (such as an increase in factor prices or the introduction of a tax), accompanied by explanatory text. By enabling the AI feature (requires an OpenRouter API key), you can allow your users to enter their own scenarios verbally, which the AI will translate into corresponding curve shifts and explain verbally.
 
 ## How can I use the Market Simulator as a user?
+
+### Tutorial Video
+A German-language tutorial video on using the Market Simulator is available on YouTube: [Market Simulator Tutorial](https://youtu.be/wz14meK5BuE?si=npHJZWfZrFqOGXHX)
 
 ### Interface Layout
 
