@@ -97,11 +97,8 @@ try:
     if os.path.exists(logo):
         desired_height = 60
         if "max_logo_height" in globals():
-            try:
-                if isinstance(max_logo_height, (int, float)) and max_logo_height > 0:
-                    desired_height = max_logo_height
-            except:
-                pass
+            if isinstance(max_logo_height, (int, float)) and max_logo_height > 0:
+                desired_height = max_logo_height
         
         # Load image and calculate dimensions
         img = Image.open(logo)
@@ -112,7 +109,7 @@ try:
         left_col, center_col, right_col = st.columns([2, 1, 2])
         with center_col:
             st.image(logo, width=desired_width)
-except:
+except (FileNotFoundError, OSError):
     pass
 
 # Create Streamlit application
@@ -136,11 +133,11 @@ if "loaded" not in st.session_state:
     st.session_state["equilibrium_price_original"] = st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_original"]
     st.session_state["equilibrium_price_modified"] = 0
     st.session_state["equilibrium_mc_prosppay_newquantity"] = 0
-    st.session_state["elasticity_demand"] = (st.session_state["demand_slope"] * 
-                                           st.session_state["equilibrium_price_original"] / 
+    st.session_state["elasticity_demand"] = (1/st.session_state["demand_slope"] *
+                                           st.session_state["equilibrium_price_original"] /
                                            st.session_state["equilibrium_quantity_original"])
-    st.session_state["elasticity_supply"] = (st.session_state["supply_slope"] * 
-                                           st.session_state["equilibrium_price_original"] / 
+    st.session_state["elasticity_supply"] = (1/st.session_state["supply_slope"] *
+                                           st.session_state["equilibrium_price_original"] /
                                            st.session_state["equilibrium_quantity_original"])
     st.session_state["gov_intervention"] = False
     st.session_state["gallery_selected"] = "(bitte wählen)"
@@ -244,6 +241,8 @@ def call_openrouter_api(user_input):
 
 # Parse the API response
 def parse_api_response(response):
+    if not response or response.startswith("Error:"):
+        return {"status": "error", "message": response or "empty response", "comment": ""}
     try:
         result = json.loads(response)
         if debug_terminal:
@@ -610,7 +609,7 @@ st.sidebar.header(get_translation("DISPLAY_HEADER"))
 
 # Create option to show surpluses
 st.sidebar.subheader(get_translation("SURPLUS_SUBHEADER"))
-surplus_option = st.sidebar.radio(label="", options=(get_translation("SURPLUS_NONE"), get_translation("SURPLUS_ORIGINAL"), get_translation("SURPLUS_SHIFTED"), get_translation("SURPLUS_BOTH")), label_visibility="collapsed")
+surplus_option = st.sidebar.radio(label=get_translation("SURPLUS_SUBHEADER"), options=(get_translation("SURPLUS_NONE"), get_translation("SURPLUS_ORIGINAL"), get_translation("SURPLUS_SHIFTED"), get_translation("SURPLUS_BOTH")), label_visibility="collapsed")
 
 st.sidebar.subheader(get_translation("GOV_SURPLUS_SUBHEADER"))
 show_gov = st.sidebar.checkbox(get_translation("SHOW_GOV_CHECKBOX"))
@@ -630,7 +629,11 @@ show_quant_results = st.sidebar.checkbox(get_translation("SHOW_QUANT_RESULTS_CHE
 # -------- CALCULATIONS
 
 # Equilibrium price and quantity before changes
-st.session_state["equilibrium_quantity_original"] = (st.session_state["demand_intercept"] - st.session_state["supply_intercept"]) / (st.session_state["supply_slope"] - st.session_state["demand_slope"])
+slope_diff = st.session_state["supply_slope"] - st.session_state["demand_slope"]
+if slope_diff == 0:
+    st.error(get_translation("VALID_NUMBER_ERROR"))
+    st.stop()
+st.session_state["equilibrium_quantity_original"] = (st.session_state["demand_intercept"] - st.session_state["supply_intercept"]) / slope_diff
 st.session_state["equilibrium_price_original"] = st.session_state["demand_intercept"] + st.session_state["demand_slope"] * st.session_state["equilibrium_quantity_original"]
 
 # Equilibrium price and quantity after shifts
@@ -805,9 +808,6 @@ if st.session_state["show_grid"]:
 # Adjust the figure size to accommodate the legend
 fig.set_size_inches(12, 8)
 plt.tight_layout()
-
-# Add legend to the right center of the graph
-ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=16)
 
 
 
@@ -1084,21 +1084,21 @@ st.markdown("""
 with st.sidebar.expander(get_translation("CURVE_PARAMS_EXPANDER")):
     st.text_input(get_translation("DEMAND_SLOPE_LABEL"), value=str(st.session_state["demand_slope"]), key="demand_slope_slider", on_change=callback_params)
     st.text_input(get_translation("DEMAND_INTERCEPT_LABEL"), value=str(st.session_state["demand_intercept"]), key="demand_intercept_slider", on_change=callback_params)
-    st.number_input(get_translation("ELASTICITY_LABEL_DEMAND"), 
-                   value=-1*float(st.session_state["elasticity_demand"]), 
-                   min_value=0.0, 
-                   max_value=100.0, 
-                   step=0.1, 
-                   key="elasticity_demand_slider", 
+    st.number_input(get_translation("ELASTICITY_LABEL_DEMAND"),
+                   value=-1*float(st.session_state["elasticity_demand"]),
+                   min_value=0.1,
+                   max_value=100.0,
+                   step=0.1,
+                   key="elasticity_demand_slider",
                    on_change=callback_elasticity_demand)
     st.text_input(get_translation("SUPPLY_SLOPE_LABEL"), value=str(st.session_state["supply_slope"]), key="supply_slope_slider", on_change=callback_params)
     st.text_input(get_translation("SUPPLY_INTERCEPT_LABEL"), value=str(st.session_state["supply_intercept"]), key="supply_intercept_slider", on_change=callback_params)
-    st.number_input(get_translation("ELASTICITY_LABEL_SUPPLY"), 
-                   value=float(st.session_state["elasticity_supply"]), 
-                   min_value=0.0, 
-                   max_value=100.0, 
-                   step=0.1, 
-                   key="elasticity_supply_slider", 
+    st.number_input(get_translation("ELASTICITY_LABEL_SUPPLY"),
+                   value=float(st.session_state["elasticity_supply"]),
+                   min_value=0.1,
+                   max_value=100.0,
+                   step=0.1,
+                   key="elasticity_supply_slider",
                    on_change=callback_elasticity_supply)
     st.button(get_translation("RESET_BUTTON"), on_click=callback_reset)
 
