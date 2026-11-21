@@ -510,20 +510,11 @@ tabs = st.tabs(tablist)
 
 with tabs[0]:    
     st.markdown("<br>", unsafe_allow_html=True)
-    # Calculate reasonable shift ranges based on intercepts to keep shifted curves visible on Y axis
-    # Allow shifts up to 70% of intercept to ensure shifted intercepts remain visible
-    max_shift_demand = abs(st.session_state["demand_intercept"]) * 0.7
-    min_shift_demand = -max_shift_demand
-    max_shift_demand = round(max_shift_demand, 1)
-    min_shift_demand = round(min_shift_demand, 1)
-    
-    max_shift_supply = abs(st.session_state["supply_intercept"]) * 0.7
-    min_shift_supply = -max_shift_supply
-    max_shift_supply = round(max_shift_supply, 1)
-    min_shift_supply = round(min_shift_supply, 1)
-    
-    slider_value_demand = st.slider(get_translation("SHIFT_DEMAND"), key="slider1", min_value=min_shift_demand, max_value=max_shift_demand, value=float(st.session_state["demand_shift"]), step=0.5, on_change=callback_shifts)
-    slider_value_supply = st.slider(get_translation("SHIFT_SUPPLY"), key="slider2", min_value=min_shift_supply, max_value=max_shift_supply, value=float(st.session_state["supply_shift"]), step=0.5, on_change=callback_shifts)
+    # Use the same price scale for both shifts: 70% of the demand intercept.
+    max_shift = round(abs(st.session_state["demand_intercept"]) * 0.7, 1)
+
+    slider_value_demand = st.slider(get_translation("SHIFT_DEMAND"), key="slider1", min_value=-max_shift, max_value=max_shift, value=float(st.session_state["demand_shift"]), step=0.5, on_change=callback_shifts)
+    slider_value_supply = st.slider(get_translation("SHIFT_SUPPLY"), key="slider2", min_value=-max_shift, max_value=max_shift, value=float(st.session_state["supply_shift"]), step=0.5, on_change=callback_shifts)
     st.checkbox(get_translation("GOV_INTERVENTION_CHECKBOX"), st.session_state["gov_intervention"], on_change=callback_gov)
 
 with tabs[1]:
