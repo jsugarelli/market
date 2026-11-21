@@ -7,12 +7,20 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as pt
 import json
 import os
+from base64 import b64encode
+from io import BytesIO
+from pathlib import Path
 from config import *
 from translations import translations, language_flags
 from streamlit import secrets
 from PIL import Image
 import requests
 import time
+
+# Send images with the app update so they don't depend on the Cloud media endpoint.
+def png_data_uri(png_bytes):
+    return "data:image/png;base64," + b64encode(png_bytes).decode("ascii")
+
 
 # ----------- OPENROUTER -----------
 
@@ -101,14 +109,15 @@ try:
                 desired_height = max_logo_height
         
         # Load image and calculate dimensions
-        img = Image.open(logo)
-        aspect_ratio = img.size[0] / img.size[1]  # width / height
-        desired_width = int(desired_height * aspect_ratio)
+        with Image.open(logo) as img, BytesIO() as png:
+            desired_width = int(desired_height * img.width / img.height)
+            img.convert("RGBA").save(png, format="PNG")
+            logo_url = png_data_uri(png.getvalue())
         
         # Create three columns with wider side columns for better centering
         left_col, center_col, right_col = st.columns([2, 1, 2])
         with center_col:
-            st.image(logo, width=desired_width)
+            st.image(logo_url, width=desired_width)
 except (FileNotFoundError, OSError):
     pass
 
@@ -934,7 +943,12 @@ if st.session_state["mode"] == "pricelimits":
 # Add the legend to the right center of the graph
 ax.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1, 0.5), fontsize=16)
 
-st.pyplot(fig)
+try:
+    with BytesIO() as png:
+        fig.savefig(png, format="png", dpi=200, bbox_inches="tight")
+        st.image(png_data_uri(png.getvalue()), use_container_width=True)
+finally:
+    plt.close(fig)
 
 
 # -------- TEXTUAL COMMENTS --------
@@ -1138,7 +1152,8 @@ with st.sidebar.expander(get_translation("ABOUT_EXPANDER")):
     st.markdown(f"{get_translation('GITHUB_TEXT')}")
     col1, col2 = st.columns([1, 4])
     with col1:
-        st.image("social-github-col.png", width=30)
+        github_icon = Path(__file__).with_name("social-github-col.png")
+        st.image(png_data_uri(github_icon.read_bytes()), width=30)
     with col2:
         st.markdown("[GitHub](https://github.com/jsugarelli/market)")
     
